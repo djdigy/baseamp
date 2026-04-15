@@ -16,26 +16,30 @@ interface Vault {
   isV2: boolean
 }
 
+// Gerçek Morpho Base vault'ları - doğru adres ve URL'ler
+const MORPHO_FALLBACK: Vault[] = [
+  { protocol: 'Morpho', name: 'Moonwell Frontier cbBTC', address: '0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796', asset: 'cbBTC', apy: '0.0', tvl: '95', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796/mwcbbtc', isBtc: true, isV2: false },
+  { protocol: 'Morpho', name: 'Re7 USDC', address: '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e', asset: 'USDC', apy: '7.7', tvl: '30', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e/re7usdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Clearstar USDC Reactor', address: '0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657', asset: 'USDC', apy: '5.4', tvl: '25', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657/csusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Steakhouse High Yield USDC', address: '0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F', asset: 'USDC', apy: '5.1', tvl: '40', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F/bbqusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Steakhouse Prime USDC', address: '0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2', asset: 'USDC', apy: '4.3', tvl: '50', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2/steakusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Gauntlet USDC Prime', address: '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61', asset: 'USDC', apy: '4.3', tvl: '20', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61/gtUSDCp', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Moonwell Flagship USDC', address: '0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca', asset: 'USDC', apy: '4.3', tvl: '22', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca/mwusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Gauntlet WETH Core', address: '0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844', asset: 'WETH', apy: '1.9', tvl: '45', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844/gtwethc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Moonwell Flagship ETH', address: '0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1', asset: 'WETH', apy: '1.7', tvl: '67', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1/mweth', isBtc: false, isV2: false },
+]
+
 const AAVE_VAULTS: Vault[] = [
   { protocol: 'Aave', name: 'Aave USDC Supply', address: '0x', asset: 'USDC', apy: '4.80', tvl: '210', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
   { protocol: 'Aave', name: 'Aave ETH Supply', address: '0x', asset: 'WETH', apy: '2.10', tvl: '180', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
   { protocol: 'Aave', name: 'Aave cbBTC Supply', address: '0x', asset: 'cbBTC', apy: '0.50', tvl: '95', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: true, isV2: false },
 ]
 
-const MORPHO_FALLBACK: Vault[] = [
-  { protocol: 'Morpho', name: 'Gauntlet cbBTC Core', address: '0xa0e430870c4604ccfc7b38ca7845b1ff653d0ff1', asset: 'cbBTC', apy: '4.51', tvl: '180', chain: 'Base', url: 'https://app.morpho.org/base/vault?vault=0xa0e430870c4604ccfc7b38ca7845b1ff653d0ff1', isBtc: true, isV2: true },
-  { protocol: 'Morpho', name: 'Steakhouse WBTC Prime', address: '0x', asset: 'WBTC', apy: '3.82', tvl: '95', chain: 'Base', url: 'https://app.morpho.org/base', isBtc: true, isV2: false },
-  { protocol: 'Morpho', name: 'Moonwell Flagship USDC', address: '0x', asset: 'USDC', apy: '4.02', tvl: '22', chain: 'Base', url: 'https://app.morpho.org/base', isBtc: false, isV2: true },
-  { protocol: 'Morpho', name: 'Steakhouse Prime USDC', address: '0x', asset: 'USDC', apy: '4.01', tvl: '50', chain: 'Base', url: 'https://app.morpho.org/base', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Gauntlet USDC Prime', address: '0x', asset: 'USDC', apy: '4.02', tvl: '20', chain: 'Base', url: 'https://app.morpho.org/base', isBtc: false, isV2: true },
-  { protocol: 'Morpho', name: 'Re7 WETH Core', address: '0x', asset: 'WETH', apy: '3.14', tvl: '67', chain: 'Base', url: 'https://app.morpho.org/base', isBtc: false, isV2: false },
-]
-
 const ASSET_COLORS: Record<string, string> = {
   cbBTC: '#f59e0b', WBTC: '#f97316', tBTC: '#ef4444',
   USDC: '#3b82f6', USDT: '#22c55e', WETH: '#8b5cf6', ETH: '#8b5cf6',
+  EURC: '#60a5fa', msETH: '#a78bfa',
 }
-
 const PROTOCOL_COLORS = { Morpho: '#6366f1', Aave: '#9b59b6' }
 
 function AssetBadge({ symbol }: { symbol: string }) {
@@ -76,7 +80,7 @@ function VaultRow({ vault }: { vault: Vault }) {
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '70px' }}>
           <div style={{ fontSize: '11px', color: '#475569', marginBottom: '2px' }}>APY</div>
-          <div style={{ fontSize: '18px', fontWeight: '800', color: '#22c55e' }}>{vault.apy}%</div>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: parseFloat(vault.apy) > 0 ? '#22c55e' : '#475569' }}>{vault.apy}%</div>
         </div>
         <div style={{ fontSize: '14px', color: '#374151', flexShrink: 0 }}>↗</div>
       </div>
@@ -104,48 +108,36 @@ export default function EarnPage() {
       let morphoVaults: Vault[] = MORPHO_FALLBACK
 
       try {
-        // Client-side Morpho API çağrısı (CORS sorun olabilir, try/catch)
-        const query = `{
-          vaults(where: { chainId_in: [8453] } orderBy: TotalAssetsUsd orderDirection: Desc first: 20) {
-            items {
-              name address totalAssetsUsd
-              state { apy }
-              asset { symbol }
-            }
-          }
-        }`
-
+        const query = `{ vaults(where: { chainId_in: [8453] } orderBy: TotalAssetsUsd orderDirection: Desc first: 20) { items { name address symbol state { apy } asset { symbol } } } }`
         const res = await fetch('https://blue-api.morpho.org/graphql', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query }),
         })
-
         if (res.ok) {
           const data = await res.json()
           const items = data?.data?.vaults?.items || []
           if (items.length > 0) {
-            morphoVaults = items.map((v: any) => ({
-              protocol: 'Morpho' as const,
-              name: v.name,
-              address: v.address,
-              asset: v.asset?.symbol || 'USDC',
-              apy: v.state?.apy ? (v.state.apy * 100).toFixed(2) : '0.00',
-              tvl: v.totalAssetsUsd ? (v.totalAssetsUsd / 1e6).toFixed(1) : '0',
-              chain: 'Base',
-              url: `https://app.morpho.org/base/vault?vault=${v.address}`,
-              isBtc: ['cbBTC', 'WBTC', 'tBTC'].some(b =>
-                (v.name || '').toUpperCase().includes(b.toUpperCase()) ||
-                (v.asset?.symbol || '').toUpperCase().includes(b.toUpperCase())
-              ),
-              isV2: (v.name || '').includes('V2'),
-            }))
+            morphoVaults = items.map((v: any) => {
+              const sym = (v.symbol || '').toLowerCase()
+              const assetSym = v.asset?.symbol || 'USDC'
+              return {
+                protocol: 'Morpho' as const,
+                name: v.name,
+                address: v.address,
+                asset: assetSym,
+                apy: v.state?.apy ? (v.state.apy * 100).toFixed(1) : '0.0',
+                tvl: '—',
+                chain: 'Base',
+                url: `https://app.morpho.org/base/vault/${v.address}/${sym}`,
+                isBtc: ['cbbtc', 'wbtc', 'tbtc'].some(b => sym.includes(b) || assetSym.toLowerCase().includes(b)),
+                isV2: v.name?.includes('V2') || false,
+              }
+            })
             setSource('live')
           }
         }
-      } catch {
-        // CORS veya network hatası — fallback kullan
-      }
+      } catch { /* fallback kullan */ }
 
       const all = [...morphoVaults, ...AAVE_VAULTS]
       all.sort((a, b) => {
@@ -156,29 +148,28 @@ export default function EarnPage() {
       setVaults(all)
       setLoading(false)
     }
-
     loadVaults()
   }, [])
 
   const filtered = vaults.filter(v => {
     if (filter === 'btc') return v.isBtc
-    if (filter === 'stable') return ['USDC', 'USDT', 'DAI'].includes(v.asset)
+    if (filter === 'stable') return ['USDC', 'USDT', 'DAI', 'EURC'].includes(v.asset)
     if (filter === 'morpho') return v.protocol === 'Morpho'
     if (filter === 'aave') return v.protocol === 'Aave'
     return true
   })
 
-  const bestApy = filtered.length > 0 ? Math.max(...filtered.map(v => parseFloat(v.apy))).toFixed(2) : '0'
-  const totalTvl = filtered.reduce((sum, v) => sum + parseFloat(v.tvl), 0).toFixed(0)
+  const bestApy = filtered.length > 0 ? Math.max(...filtered.map(v => parseFloat(v.apy))).toFixed(1) : '0'
+  const totalTvlNum = filtered.filter(v => v.tvl !== '—').reduce((sum, v) => sum + parseFloat(v.tvl), 0)
+  const totalTvl = totalTvlNum > 0 ? totalTvlNum.toFixed(0) : '—'
 
   return (
     <AppLayout title="Earn">
       <div style={{ maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           {[
             { label: 'Best APY', value: loading ? '...' : `${bestApy}%`, color: '#22c55e' },
-            { label: 'Total TVL', value: loading ? '...' : `$${totalTvl}M`, color: '#60a5fa' },
+            { label: 'Total TVL', value: loading ? '...' : totalTvl === '—' ? '—' : `$${totalTvl}M`, color: '#60a5fa' },
             { label: 'Vaults', value: loading ? '...' : filtered.length.toString(), color: '#f97316' },
           ].map((s, i) => (
             <div key={i} style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
@@ -201,13 +192,12 @@ export default function EarnPage() {
             <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db' }}>
               {loading ? 'Loading vaults...' : `${filtered.length} vaults`}
             </div>
-            <div style={{ fontSize: '10px', color: source === 'live' ? '#22c55e' : '#374151' }}>
+            <div style={{ fontSize: '10px', color: source === 'live' ? '#22c55e' : '#94a3b8' }}>
               {source === 'live' ? '🟢 Live data' : '📊 Cached data'}
             </div>
           </div>
-
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#475569', fontSize: '14px' }}>Loading...</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#475569' }}>Loading...</div>
           ) : filtered.map((v, i) => <VaultRow key={i} vault={v} />)}
         </div>
 
