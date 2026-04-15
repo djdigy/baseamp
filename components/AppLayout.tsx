@@ -2,13 +2,16 @@
 
 import { Sidebar } from './Sidebar'
 import { ConnectWallet } from './ConnectWallet'
+import { useReferral } from '@/hooks/useReferral'
 
 export function AppLayout({ children, title }: { children: React.ReactNode, title: string }) {
+  // Referral hook - URL'den ref parametresini okur
+  useReferral()
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Topbar */}
         <div style={{
           background: 'var(--bg-secondary)',
           borderBottom: '1px solid var(--border)',
@@ -29,7 +32,6 @@ export function AppLayout({ children, title }: { children: React.ReactNode, titl
             <ConnectWallet />
           </div>
         </div>
-        {/* Content */}
         <main style={{ flex: 1, padding: '20px 24px', overflowY: 'auto' }}>
           {children}
         </main>
