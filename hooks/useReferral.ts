@@ -13,9 +13,10 @@ export function useReferral() {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const ref = params.get('ref')
-    if (ref && ref.startsWith('0x') && ref.length === 42) {
-      localStorage.setItem(REFERRAL_KEY, ref.toLowerCase())
-      setReferrer(ref.toLowerCase())
+
+    if (ref) {
+      localStorage.setItem(REFERRAL_KEY, ref) // kod veya adres
+      setReferrer(ref)
     } else {
       const saved = localStorage.getItem(REFERRAL_KEY)
       if (saved) setReferrer(saved)
@@ -24,11 +25,17 @@ export function useReferral() {
 
   useEffect(() => {
     if (!address || !referrer) return
-    if (address.toLowerCase() === referrer) return
+    // Adresse referral verme
+    if (referrer.toLowerCase() === address.toLowerCase()) return
+
     fetch('/api/referral/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ referrer, referee: address.toLowerCase(), feeAmount: 0.0001 }),
+      body: JSON.stringify({
+        referrer, // kod veya adres — API çözüyor
+        referee: address.toLowerCase(),
+        feeAmount: 0.0001,
+      }),
     }).catch(console.error)
   }, [address, referrer])
 
@@ -36,5 +43,5 @@ export function useReferral() {
 }
 
 export function calculateFee(baseFee: bigint, hasReferral: boolean): bigint {
-  return hasReferral ? (baseFee * BigInt(80)) / BigInt(100) : baseFee
+  return hasReferral ? (baseFee * 80n) / 100n : baseFee
 }

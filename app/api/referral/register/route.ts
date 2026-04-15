@@ -1,16 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { redis } from '@/lib/redis'
 import { referralStore } from '@/lib/referralStore'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { referrer, referee, feeAmount } = body
 
-  if (!referrer || !referee) return NextResponse.json({ error: 'referrer and referee required' }, { status: 400 })
+  if (!referrer || !referee) {
+    return NextResponse.json({ error: 'referrer and referee required' }, { status: 400 })
+  }
 
-  const referrerAddr = referrer.toLowerCase()
   const refereeAddr = referee.toLowerCase()
 
-  if (referrerAddr === refereeAddr) return NextResponse.json({ error: 'Cannot refer yourself' }, { status: 400 })
+  // referrer kısa kod mu, yoksa adres mi?
+  let referrerAddr = referrer.toLowerCase()
+  if (!referrerAddr.startsWith('0x')) {
+    // Kısa kod — adresi çöz
+    const resolved = await redis.get<string>(`refcode:code:${referrer}`)
+    if (!resolved) return NextResponse.json({ error: 'Invalid referral code' }, { status: 400 })
+    referrerAddr = resolved.toLowerCase()
+  }
+
+  if (referrerAddr === refereeAddr) {
+    return NextResponse.json({ error: 'Cannot refer yourself' }, { status: 400 })
+  }
 
   const earned = ((feeAmount || 0.0001) * 0.1).toFixed(6)
   const existing = referralStore.get(referrerAddr) ?? { referrals: [], totalEarned: 0 }

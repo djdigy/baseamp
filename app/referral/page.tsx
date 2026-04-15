@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 import { useState, useEffect } from 'react'
 
 interface ReferralStats {
-  referralCode: string
+  code: string
   referralLink: string
   totalReferrals: number
   totalEarned: string
@@ -21,9 +21,22 @@ export default function ReferralPage() {
   useEffect(() => {
     if (!address) return
     setLoading(true)
-    fetch(`/api/referral/stats?address=${address}`)
+
+    // Önce kısa kod al, sonra stats çek
+    fetch(`/api/referral/code?address=${address}`)
       .then(r => r.json())
-      .then(d => setStats(d))
+      .then(async (codeData) => {
+        const statsRes = await fetch(`/api/referral/stats?address=${address}`)
+        const statsData = await statsRes.json()
+        setStats({
+          code: codeData.code,
+          referralLink: codeData.link,
+          totalReferrals: statsData.totalReferrals,
+          totalEarned: statsData.totalEarned,
+          referrals: statsData.referrals,
+        })
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [address])
 
@@ -55,9 +68,9 @@ export default function ReferralPage() {
           <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db', marginBottom: '14px' }}>
             💰 How Referral Works
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {[
-              { icon: '🔗', title: 'Share your link', desc: 'Send your unique referral link to friends' },
+              { icon: '🔗', title: 'Share your link', desc: 'Your unique code protects your privacy' },
               { icon: '💸', title: 'They save 20%', desc: 'Referral users pay 20% less on all fees' },
               { icon: '🎯', title: 'You earn 10%', desc: '10% of every fee they pay goes to you' },
               { icon: '♾️', title: 'Forever', desc: 'Commissions never expire — earn forever' },
@@ -71,16 +84,32 @@ export default function ReferralPage() {
           </div>
         </div>
 
-        {/* Your referral link */}
+        {/* Referral link */}
         <div style={{ background: '#0f1a2e', border: '1px solid #1e3a5f', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '12px', color: '#3b82f6', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
             Your Referral Link
           </div>
 
           {loading ? (
-            <div style={{ fontSize: '13px', color: '#475569' }}>Loading...</div>
+            <div style={{ fontSize: '13px', color: '#475569' }}>Generating your code...</div>
           ) : stats ? (
             <>
+              {/* Kısa kod göster */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#475569' }}>Your code:</div>
+                <div style={{
+                  background: '#172554', border: '1px solid #1e3a5f',
+                  borderRadius: '6px', padding: '4px 12px',
+                  fontSize: '16px', fontWeight: '800',
+                  color: '#60a5fa', letterSpacing: '0.1em',
+                  fontFamily: 'monospace',
+                }}>
+                  {stats.code}
+                </div>
+                <div style={{ fontSize: '10px', color: '#374151' }}>🔒 Your wallet is hidden</div>
+              </div>
+
+              {/* Tam link */}
               <div style={{
                 background: '#0a1628', border: '1px solid #1e3a5f', borderRadius: '8px',
                 padding: '10px 14px', fontSize: '12px', color: '#60a5fa',
@@ -105,7 +134,7 @@ export default function ReferralPage() {
 
                 <button
                   onClick={() => {
-                    const text = `Join me on BaseAmp — earn on Base daily! Use my referral link for 20% fee discount:\n\n${stats.referralLink}`
+                    const text = `Join me on BaseAmp — earn on Base daily!\n\nUse my referral code for 20% fee discount:\n\n${stats.referralLink}`
                     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
                   }}
                   style={{
@@ -127,7 +156,7 @@ export default function ReferralPage() {
             {[
               { label: 'Total Referrals', value: stats.totalReferrals.toString(), color: '#60a5fa' },
               { label: 'Total Earned', value: `${stats.totalEarned} ETH`, color: '#22c55e' },
-              { label: 'Commission Rate', value: '10%', color: '#f97316' },
+              { label: 'Commission', value: '10%', color: '#f97316' },
             ].map((item, i) => (
               <div key={i} style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
                 <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>{item.label}</div>
@@ -138,31 +167,22 @@ export default function ReferralPage() {
         )}
 
         {/* Referral list */}
-        {stats && stats.referrals.length > 0 && (
+        {stats && stats.referrals.length > 0 ? (
           <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '20px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db', marginBottom: '14px' }}>
-              Your Referrals
-            </div>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db', marginBottom: '14px' }}>Your Referrals</div>
             {stats.referrals.map((ref, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 0', borderBottom: i < stats.referrals.length - 1 ? '1px solid #1a1d2744' : 'none',
-              }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < stats.referrals.length - 1 ? '1px solid #1a1d2744' : 'none' }}>
                 <div>
                   <div style={{ fontSize: '12px', color: '#e2e8f0', fontFamily: 'monospace' }}>
                     {ref.address.slice(0, 6)}...{ref.address.slice(-4)}
                   </div>
                   <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>{ref.date}</div>
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#22c55e' }}>
-                  +{ref.earned} ETH
-                </div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#22c55e' }}>+{ref.earned} ETH</div>
               </div>
             ))}
           </div>
-        )}
-
-        {stats && stats.referrals.length === 0 && (
+        ) : stats && (
           <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>👋</div>
             <div style={{ fontSize: '14px', color: '#64748b' }}>No referrals yet</div>
