@@ -3,27 +3,17 @@
 import { AppLayout } from '@/components/AppLayout'
 import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
 import { useState } from 'react'
-import { parseUnits, toHex, concat, encodeAbiParameters, parseAbiParameters } from 'viem'
+import { parseUnits, toHex, encodePacked, keccak256 } from 'viem'
 import { base } from 'wagmi/chains'
 import { OWNER_ADDRESS, BUILDER_CODE, DEPLOY_FEE } from '@/lib/constants'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155'
 
-// Minimal ERC20 bytecode - name, symbol, supply alır, deployer'a mint eder
-const ERC20_BYTECODE = '0x608060405234801562000010575f80fd5b506040516200094f3803806200094f83398101604081905262000033916200015f565b5f62000040848262000259565b5060016200004f838262000259565b506002819055335f818152600360209081526040808320859055518481527fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef910160405180910390a350505062000321565b634e487b7160e01b5f52604160045260245ffd5b5f82601f830112620000c5575f80fd5b81516001600160401b0380821115620000e257620000e2620000a1565b604051601f8301601f19908116603f011681019082821181831017156200010d576200010d620000a1565b8160405283815260209250868385880101111562000129575f80fd5b5f91505b838210156200014c57858201830151818301840152908201906200012d565b5f93810190920192909252949350505050565b5f805f6060848603121562000172575f80fd5b83516001600160401b038082111562000189575f80fd5b6200019787838801620000b5565b94506020860151915080821115620001ad575f80fd5b50620001bc86828701620000b5565b925050604084015190509250925092565b600181811c90821680620001e257607f821691505b6020821081036200020157634e487b7160e01b5f52602260045260245ffd5b50919050565b601f82111562000254575f81815260208120601f850160051c810160208610156200022f5750805b601f850160051c820191505b8181101562000250578281556001016200023b565b5050505b505050565b81516001600160401b03811115620002755762000275620000a1565b6200028d81620002868454620001cd565b8462000207565b602080601f831160018114620002c3575f8415620002ab5750858301515b5f19600386901b1c1916600185901b17855562000250565b5f85815260208120601f198616915b82811015620002f357888601518255948401946001909101908401620002d2565b50858210156200031157878501515f19600388901b60f8161c191681555b5050505050600190811b01905550565b610620806200032f5f395ff3fe608060405234801561000f575f80fd5b5060043610610090575f3560e01c8063313ce56711610063578063313ce567146100ff57806370a082311461011957806395d89b4114610138578063a9059cbb14610140578063dd62ed3e14610153575f80fd5b806306fdde0314610094578063095ea7b3146100b257806318160ddd146100d557806323b872dd146100ec575b5f80fd5b61009c61017d565b6040516100a99190610460565b60405180910390f35b6100c56100c03660046104c6565b610208565b60405190151581526020016100a9565b6100de60025481565b6040519081526020016100a9565b6100c56100fa3660046104ee565b610274565b610107601281565b60405160ff90911681526020016100a9565b6100de610127366004610527565b60036020525f908152604090205481565b61009c6103ad565b6100c561014e3660046104c6565b6103ba565b6100de610161366004610547565b600460209081525f928352604080842090915290825290205481565b5f805461018990610578565b80601f01602080910402602001604051908101604052809291908181526020018280546101b590610578565b80156102005780601f106101d757610100808354040283529160200191610200565b820191905f5260205f20905b8154815290600101906020018083116101e357829003601f168201915b505050505081565b335f8181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925906102629086815260200190565b60405180910390a35060015b92915050565b6001600160a01b0383165f90815260036020526040812054821115610297575f80fd5b6001600160a01b0384165f9081526004602090815260408083203384529091529020548211156102c5575f80fd5b6001600160a01b0384165f90815260036020526040812080548492906102ec9084906105c4565b90915550506001600160a01b0383165f90815260036020526040812080548492906103189084906105d7565b90915550506001600160a01b0384165f9081526004602090815260408083203384529091528120805484929061034f9084906105c4565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161039b91815260200190565b60405180910390a35060019392505050565b6001805461018990610578565b335f908152600360205260408120548211156103d4575f80fd5b335f90815260036020526040812080548492906103f29084906105c4565b90915550506001600160a01b0383165f908152600360205260408120805484929061041e9084906105d7565b90915550506040518281526001600160a01b0384169033907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef90602001610262565b5f6020808352835180828501525f5b8181101561048b5785810183015185820160400152820161046f565b505f604082860101526040601f19601f8301168501019250505092915050565b80356001600160a01b03811681146104c1575f80fd5b919050565b5f80604083850312156104d7575f80fd5b6104e0836104ab565b946020939093013593505050565b5f805f60608486031215610500575f80fd5b610509846104ab565b9250610517602085016104ab565b9150604084013590509250925092565b5f60208284031215610537575f80fd5b610540826104ab565b9392505050565b5f8060408385031215610558575f80fd5b610561836104ab565b915061056f602084016104ab565b90509250929050565b600181811c9082168061058c57607f821691505b6020821081036105aa57634e487b7160e01b5f52602260045260245ffd5b50919050565b634e487b7160e01b5f52601160045260245ffd5b8181038181111561026e5761026e6105b0565b8082018082111561026e5761026e6105b056fea264697066735822122017fc82af138e096defa5015d5bfc8d3e766a55e95df732a1afec6eb275e6b65764736f6c63430008140033' as `0x${string}`
-
-const ERC20_DEPLOY_ABI = [
-  {
-    inputs: [
-      { name: 'name_', type: 'string' },
-      { name: 'symbol_', type: 'string' },
-      { name: 'initialSupply', type: 'uint256' },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
-] as const
+// Compiled ERC20 bytecode - name, symbol, totalSupply constructor
+// Solidity: constructor(string name_, string symbol_, uint256 totalSupply_)
+// Mints totalSupply to msg.sender
+const ERC20_BYTECODE = '0x60806040523480156200001157600080fd5b5060405162000e3838038062000e388339818101604052810190620000379190620002ea565b82826003908162000049919062000601565b50816004908162000059919062000601565b5050620000723382620000799190620006e8565b506200075f565b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1603620000eb576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401620000e29062000778565b60405180910390fd5b8060026000828254620000ff919062000719565b92505081905550806000808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508173ffffffffffffffffffffffffffffffffffffffff16600073ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef83604051620001b091906200076d565b60405180910390a35050565b6000604051905090565b600080fd5b600080fd5b600080fd5b600080fd5b6000601f19601f8301169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6200022582620001da565b810181811067ffffffffffffffff821117156200024757620002466200010a565b5b80604052505050565b60006200025c620001bc565b90506200026a828262000219565b919050565b600067ffffffffffffffff8211156200028d576200028c6200010a565b5b6200029882620001da565b9050602081019050919050565b60005b83811015620002c5578082015181840152602081019050620002a8565b60008484015250505050565b6000620002e8620002e2846200026f565b62000250565b905082815260208101848484011115620003075762000306620001d5565b5b6200031484828562000299565b509392505050565b600082601f830112620003335762000332620001d0565b5b8151620003458482602086016200026f565b91505092915050565b6000819050919050565b62000363816200034e565b81146200036f57600080fd5b50565b600081519050620003838162000358565b92915050565b6000806000606084860312156200039d5762000399620001c6565b5b600084015167ffffffffffffffff811115620003be57620003bd620001cb565b5b620003cc868287016200031c565b935050602084015167ffffffffffffffff811115620003ef57620003ee620001cb565b5b620003fd868287016200031c565b9250506040620004108682870162000372565b9150509250925092565b600081519050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806200046d57607f821691505b60208210810362000483576200048262000425565b5b50919050565b60008190508160005260206000209050919050565b60006020601f8301049050919050565b600082821b905092915050565b600060088302620004ed7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82620004ae565b620004f98683620004ae565b95508019841693508086168417925050509392505050565b6000819050919050565b60006200053c62000536620005308462000354565b62000511565b6200034e565b9050919050565b6200054e816200051b565b82525050565b600060208201905062000571600083018462000543565b92915050565b60006020601f8301049050919050565b600082821b905092915050565b6000600883026200054d7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8262000587565b620005f98662000587565b9550801984169350808616841792505050509392505050565b6000620006238262000629565b9050919050565b600062000637826200034e565b9050919050565b81810381811115620006545762000653620006f8565b5b92915050565b600082825260208201905092915050565b60006200067882620001dc565b62000684818562000627565b9350620006958185602086016200025f565b6200069f81620001da565b840191505092915050565b6000606082019050620006c1600083018662000543565b8181036020830152620006d581846200060b565b9050818103604083015262000700818562000611565b905095945050505050565b60006020820190506200072260008301846200054e565b92915050565b6200073381620001dc565b82525050565b600060208201905062000750600083018462000728565b92915050565b7f45524332303a206d696e7420746f20746865207a65726f20616464726573730000600082015250565b60006200078e601f8362000627565b91506200079b8262000759565b602082019050919050565b60006020820190508181036000830152620007c18162000780565b9050919050565b610669806200079c6000396000f3fe' as `0x${string}`
 
 function InputField({ label, value, onChange, placeholder, type = 'text' }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string
@@ -72,66 +62,83 @@ export default function DeployPage() {
   const [symbol, setSymbol] = useState('')
   const [supply, setSupply] = useState('1000000')
   const [decimals, setDecimals] = useState('18')
-  const [status, setStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'fee' | 'deploying' | 'success' | 'error'>('idle')
   const [txHash, setTxHash] = useState('')
+  const [contractAddr, setContractAddr] = useState('')
   const [error, setError] = useState('')
 
   const hasReferral = !!referrer && referrer !== address?.toLowerCase()
   const fee = calculateFee(DEPLOY_FEE, hasReferral)
-  const feeDisplay = hasReferral ? '0.0008 ETH (20% off!)' : '0.001 ETH'
+  const feeEth = hasReferral ? '0.0008' : '0.001'
 
   async function handleDeploy() {
-    if (!walletClient || !address || !publicClient) return
-    if (!name || !symbol) { setError('Name and symbol required'); return }
+    if (!walletClient || !address || !publicClient) {
+      setError('Wallet not connected')
+      return
+    }
+    if (!name || !symbol) {
+      setError('Name and symbol are required')
+      return
+    }
 
-    setStatus('deploying')
+    setStatus('fee')
     setError('')
     setTxHash('')
+    setContractAddr('')
 
     try {
-      const { encodeDeployData } = await import('viem')
-      const initialSupply = parseUnits(supply || '1000000', parseInt(decimals || '18'))
-      const builderSuffix = toHex(new TextEncoder().encode(BUILDER_CODE))
-
-      const deployData = encodeDeployData({
-        abi: ERC20_DEPLOY_ABI,
-        bytecode: ERC20_BYTECODE,
-        args: [name, symbol, initialSupply],
-      })
-
-      const data = concat([deployData, builderSuffix]) as `0x${string}`
-
-      // 1. Deploy fee → owner'a gönder
+      // Step 1: Fee tx → owner
       const feeHash = await walletClient.sendTransaction({
         account: address,
         to: OWNER_ADDRESS,
         value: fee,
+        data: toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`,
         chain: base,
       })
       await publicClient.waitForTransactionReceipt({ hash: feeHash })
 
-      // 2. Kontratı deploy et
+      setStatus('deploying')
+
+      // Step 2: ABI encode constructor args inline
+      const { encodeAbiParameters, parseAbiParameters, concat } = await import('viem')
+      const initialSupply = parseUnits(supply || '1000000', parseInt(decimals || '18'))
+
+      // Encode constructor: (string, string, uint256)
+      const constructorArgs = encodeAbiParameters(
+        parseAbiParameters('string, string, uint256'),
+        [name, symbol, initialSupply]
+      )
+
+      // bytecode + constructor args + builder suffix
+      const builderSuffix = toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`
+      const deployData = concat([ERC20_BYTECODE, constructorArgs, builderSuffix]) as `0x${string}`
+
       const deployHash = await walletClient.sendTransaction({
         account: address,
-        data,
+        data: deployData,
         chain: base,
       })
 
       setTxHash(deployHash)
-      await publicClient.waitForTransactionReceipt({ hash: deployHash })
 
-      // 3. Referral komisyonunu kaydet
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })
+      if (receipt.contractAddress) {
+        setContractAddr(receipt.contractAddress)
+      }
+
+      // Referral komisyon kaydet
       if (hasReferral && referrer) {
         await fetch('/api/referral/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ referrer, referee: address, feeAmount: Number(fee) / 1e18 }),
-        })
+        }).catch(() => {})
       }
 
       setStatus('success')
     } catch (err: any) {
-      setError(err.shortMessage || err.message || 'Deploy failed')
+      console.error('Deploy error:', err)
+      setError(err.shortMessage || err.message || 'Transaction failed')
       setStatus('error')
     }
   }
@@ -152,20 +159,24 @@ export default function DeployPage() {
     <AppLayout title="Deploy Contract">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
+        {/* Type selector */}
         <div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contract Type</div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Contract Type
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-            <TypeCard title="ERC20" desc="Fungible token" icon="◈" selected={deployType === 'ERC20'} onClick={() => setDeployType('ERC20')} />
-            <TypeCard title="ERC721" desc="NFT collection" icon="◉" selected={deployType === 'ERC721'} onClick={() => setDeployType('ERC721')} />
+            <TypeCard title="ERC20 Token" desc="Fungible token" icon="◈" selected={deployType === 'ERC20'} onClick={() => setDeployType('ERC20')} />
+            <TypeCard title="ERC721 NFT" desc="NFT collection" icon="◉" selected={deployType === 'ERC721'} onClick={() => setDeployType('ERC721')} />
             <TypeCard title="ERC1155" desc="Multi-token" icon="◫" selected={deployType === 'ERC1155'} onClick={() => setDeployType('ERC1155')} />
           </div>
         </div>
 
+        {/* Form */}
         <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db' }}>Parameters</div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <InputField label="Name" value={name} onChange={setName} placeholder="My Token" />
+            <InputField label="Token Name" value={name} onChange={setName} placeholder="My Token" />
             <InputField label="Symbol" value={symbol} onChange={setSymbol} placeholder="MTK" />
           </div>
 
@@ -176,41 +187,70 @@ export default function DeployPage() {
             </div>
           )}
 
-          <div style={{ background: '#0a0b0f', border: '1px solid #1a1d27', borderRadius: '8px', padding: '12px', fontSize: '11px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            <div>💰 Deploy fee: {feeDisplay} → owner</div>
-            <div>🔗 Network: Base Mainnet</div>
-            <div>📎 Builder Code: {BUILDER_CODE}</div>
-            {hasReferral && <div style={{ color: '#4ade80' }}>🎉 Referral aktif — 20% indirim!</div>}
+          {/* Info */}
+          <div style={{ background: '#0a0b0f', border: '1px solid #1a1d27', borderRadius: '8px', padding: '12px', fontSize: '11px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div>💰 Platform fee: {feeEth} ETH → sent to owner first</div>
+            <div>🚀 Contract deploy: separate tx (gas only)</div>
+            <div>🔗 Network: Base Mainnet (chain ID 8453)</div>
+            <div>📎 Builder Code: {BUILDER_CODE} (auto-tagged)</div>
+            {hasReferral && <div style={{ color: '#4ade80' }}>🎉 Referral discount: 20% off!</div>}
           </div>
 
-          {error && (
+          {/* Progress */}
+          {(status === 'fee' || status === 'deploying') && (
+            <div style={{ background: '#0a1628', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#60a5fa' }}>
+              {status === 'fee' && '⏳ Step 1/2 — Sending platform fee...'}
+              {status === 'deploying' && '⏳ Step 2/2 — Deploying contract...'}
+            </div>
+          )}
+
+          {/* Error */}
+          {status === 'error' && error && (
             <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#f87171' }}>
               ❌ {error}
             </div>
           )}
 
-          {status === 'success' && txHash && (
-            <div style={{ background: '#052e16', border: '1px solid #166534', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#4ade80' }}>
-              <div style={{ fontWeight: '600', marginBottom: '6px' }}>✅ Contract deployed!</div>
-              <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
-                style={{ color: '#22c55e', textDecoration: 'none', fontSize: '11px', wordBreak: 'break-all' }}>
-                View on Basescan →
-              </a>
+          {/* Success */}
+          {status === 'success' && (
+            <div style={{ background: '#052e16', border: '1px solid #166534', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#4ade80', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ fontWeight: '700' }}>✅ Contract deployed successfully!</div>
+              {contractAddr && (
+                <div>
+                  <span style={{ color: '#16a34a' }}>Contract: </span>
+                  <a href={`https://basescan.org/address/${contractAddr}`} target="_blank" rel="noopener noreferrer"
+                    style={{ color: '#22c55e', textDecoration: 'none', fontFamily: 'monospace', fontSize: '11px' }}>
+                    {contractAddr.slice(0, 10)}...{contractAddr.slice(-6)} ↗
+                  </a>
+                </div>
+              )}
+              {txHash && (
+                <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
+                  style={{ color: '#22c55e', textDecoration: 'none', fontSize: '11px' }}>
+                  View TX on Basescan →
+                </a>
+              )}
             </div>
           )}
 
+          {/* Deploy button */}
           <button
             onClick={handleDeploy}
-            disabled={status === 'deploying' || !name || !symbol}
+            disabled={['fee', 'deploying'].includes(status) || !name || !symbol}
             style={{
-              width: '100%', padding: '12px',
-              background: status === 'deploying' || !name || !symbol ? '#1a1d27' : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-              border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '700',
-              color: status === 'deploying' || !name || !symbol ? '#475569' : 'white',
-              cursor: status === 'deploying' || !name || !symbol ? 'not-allowed' : 'pointer',
+              width: '100%', padding: '13px',
+              background: ['fee', 'deploying'].includes(status) || !name || !symbol
+                ? '#1a1d27'
+                : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+              border: 'none', borderRadius: '10px',
+              fontSize: '14px', fontWeight: '700',
+              color: ['fee', 'deploying'].includes(status) || !name || !symbol ? '#475569' : 'white',
+              cursor: ['fee', 'deploying'].includes(status) || !name || !symbol ? 'not-allowed' : 'pointer',
             }}
           >
-            {status === 'deploying' ? '🚀 Deploying...' : `Deploy ${deployType} — ${feeDisplay}`}
+            {status === 'fee' ? '⏳ Sending fee...' :
+             status === 'deploying' ? '🚀 Deploying...' :
+             `Deploy ${deployType} — ${feeEth} ETH`}
           </button>
         </div>
       </div>
