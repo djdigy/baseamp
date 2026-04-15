@@ -1,44 +1,44 @@
-// Upstash Redis client - env varsa kullan, yoksa in-memory fallback
-let redisClient: any = null
+import { Redis } from '@upstash/redis'
 
-// In-memory fallback store
-const memoryStore = new Map<string, string>()
+let client: Redis | null = null
+
+function getClient(): Redis | null {
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null
+  if (!client) {
+    client = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
+  }
+  return client
+}
+
+// In-memory fallback
+const mem = new Map<string, any>()
 
 export const redis = {
-  async get(key: string): Promise<string | null> {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  async get<T = any>(key: string): Promise<T | null> {
+    const c = getClient()
+    if (c) {
       try {
-        const { Redis } = await import('@upstash/redis')
-        if (!redisClient) {
-          redisClient = new Redis({
-            url: process.env.KV_REST_API_URL,
-            token: process.env.KV_REST_API_TOKEN,
-          })
-        }
-        return await redisClient.get(key)
-      } catch { /* fallback */ }
+        return await c.get<T>(key)
+      } catch (e) {
+        console.error('Redis get error:', e)
+      }
     }
-    return memoryStore.get(key) ?? null
+    return mem.get(key) ?? null
   },
 
-  async set(key: string, value: string, options?: { ex?: number }): Promise<void> {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  async set(key: string, value: any): Promise<void> {
+    const c = getClient()
+    if (c) {
       try {
-        const { Redis } = await import('@upstash/redis')
-        if (!redisClient) {
-          redisClient = new Redis({
-            url: process.env.KV_REST_API_URL,
-            token: process.env.KV_REST_API_TOKEN,
-          })
-        }
-        if (options?.ex) {
-          await redisClient.set(key, value, { ex: options.ex })
-        } else {
-          await redisClient.set(key, value)
-        }
+        await c.set(key, value)
         return
-      } catch { /* fallback */ }
+      } catch (e) {
+        console.error('Redis set error:', e)
+      }
     }
-    memoryStore.set(key, value)
+    mem.set(key, value)
   }
 }
