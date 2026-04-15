@@ -3,15 +3,15 @@
 import { AppLayout } from '@/components/AppLayout'
 import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
 import { useState } from 'react'
-import { parseUnits, encodeAbiParameters, parseAbiParameters, keccak256, toBytes, concat, pad, toHex } from 'viem'
-import { BUILDER_CODE } from '@/lib/wagmi'
+import { parseUnits, toHex, concat, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { base } from 'wagmi/chains'
+import { OWNER_ADDRESS, BUILDER_CODE, DEPLOY_FEE } from '@/lib/constants'
+import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155'
 
-// Minimal ERC20 - constructor(string name, string symbol, uint256 supply)
-// Bu bytecode name/symbol/supply alır, deployer'a mint eder
-const ERC20_BYTECODE = `0x608060405234801561001057600080fd5b50604051610a8a380380610a8a8339818101604052810190610032919061033a565b828260039081610042919061061c565b508160049081610052919061061c565b50505061006a3382610070565b5050506106ee565b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff16036100df576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016100d690610700565b60405180910390fd5b806002600082825461010191906106a0565b92505081905550806000808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825461015591906106a0565b925050819055508173ffffffffffffffffffffffffffffffffffffffff16600073ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8360405161019991906106d5565b60405180910390a35050565b6000604051905090565b600080fd5b600080fd5b600080fd5b600080fd5b6000601f19601f8301169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b610212826101c9565b810181811067ffffffffffffffff821117156102315761023061019a565b5b80604052505050565b60006102446101a5565b90506102508282610209565b919050565b600067ffffffffffffffff8211156102705761026f61019a565b5b610279826101c9565b9050602081019050919050565b60005b838110156102a4578082015181840152602081019050610289565b60008484015250505050565b60006102c36102be84610255565b61023a565b9050828152602081018484840111156102df576102de6101b9565b5b6102ea848285610286565b509392505050565b600082601f83011261030757610306610190565b5b81516103178482602086016102b0565b91505092915050565b6000819050919050565b61033381610320565b811461033e57600080fd5b50565b60008151905061035081610320565b92915050565b60008060006060848603121561036f5761036e6101af565b5b600084015167ffffffffffffffff81111561038d5761038c6101b4565b5b610399868287016102f2565b935050602084015167ffffffffffffffff8111156103ba576103b96101b4565b5b6103c6868287016102f2565b92505060406103d786828701610341565b9150509250925092565b600081519050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061043357607f821691505b602082108103610446576104456103ec565b5b50919050565b60008190508160005260206000209050919050565b60006020601f8301049050919050565b600082821b905092915050565b6000600883026104ae7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82610471565b6104b88683610471565b95508019841693508086168417925050509392505050565b6000819050919050565b60006104f56104f06104eb84610320565b6104d0565b610320565b9050919050565b6000819050919050565b61050f836104da565b61052361051b826104fc565b84845461047e565b825550505050565b600090565b61053861052b565b610543818484610506565b505050565b5b8181101561056757610554600082610530565b600181019050610549565b5050565b601f8211156105ac5761057d8161044c565b61058684610461565b81016020851015610595578190505b6105a96105a185610461565b830182610548565b50505b505050565b600082821c905092915050565b60006105cf600019846008026105b1565b1980831691505092915050565b60006105e883836105be565b9150826002028217905092915050565b610601826103e1565b67ffffffffffffffff81111561061a5761061961019a565b5b610624825461041b565b61062f82828561056b565b600060209050601f8311600181146106625760008415610650578287015190505b61065a85826105dc565b8655506106c2565b601f1984166106708661044c565b60005b8281101561069857848901518255600182019150602085019450602081019050610673565b868310156106b557848901516106b1601f8916826105be565b8255505b6001600288020188555050505b505050505050565b6106d381610320565b82525050565b60006020820190506106ee60008301846106ca565b92915050565b600082825260208201905092915050565b7f45524332303a206d696e7420746f20746865207a65726f206164647265737300600082015250565b600061073b601f836106f5565b915061074682610706565b602082019050919050565b6000602082019050818103600083015261076a8161072e565b9050919050565b610a8d806106fd6000396000f3fe` as `0x${string}`
+// Minimal ERC20 bytecode - name, symbol, supply alır, deployer'a mint eder
+const ERC20_BYTECODE = '0x608060405234801561001057600080fd5b506040516107e83803806107e883398101604081905261002f91610174565b828160036100408382610270565b5060046100508282610270565b5050506100693361006460028461033e565b61006c565b505050506103ae565b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff16036100db576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016100d29061037e565b60405180910390fd5b80600260008282546100ed919061039e565b925050819055508060008085815260200190815260200160002060008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254610152919061039e565b925050819055505050565b634e487b7160e01b600052604160045260246000fd5b60008060006060848603121561018957600080fd5b83516001600160401b038082111561019e57600080fd5b818601915086601f8301126101b257600080fd5b81516020828211156101c6576101c661015d565b8060051b604051601f19603f830116810181811086821117156101eb576101eb61015d565b60405292835281830193508481018201928a84111561020957600080fd5b948201945b8386101561022e578551825294820194908201906102f9610173565b9550505050604086015190809350508290506102498161016f565b9050509250925092565b600181811c9082168061026757607f821691505b60208210810361028757634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156102cb57806000526020600020601f840160051c810160208510156102b45750805b601f840160051c820191505b818110156102d457600081556001016102c0565b5050505050565b81516001600160401b038111156102f4576102f461015d565b610308816103028454610253565b8461028d565b602080601f83116001811461033d57600084156103255750858301515b600019600386901b1c1916600185901b1785556102d4565b600085815260208120601f198616915b8281101561036c5788860151825594840194600190910190840161034d565b508582101561038a5787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b600060208201905081810360008301526103b481846102db565b9392505050565b8181038181111561021a57634e487b7160e01b600052601160045260246000fd5b6103e98261016f565b6103f28461016f565b828201915081838311156104095761040861021a565b5b9392505050565b61042b8061041e6000396000f3fe' as `0x${string}`
 
 const ERC20_DEPLOY_ABI = [
   {
@@ -65,6 +65,7 @@ export default function DeployPage() {
   const { address, isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
+  const { referrer } = useReferral()
 
   const [deployType, setDeployType] = useState<DeployType>('ERC20')
   const [name, setName] = useState('')
@@ -74,6 +75,10 @@ export default function DeployPage() {
   const [status, setStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle')
   const [txHash, setTxHash] = useState('')
   const [error, setError] = useState('')
+
+  const hasReferral = !!referrer && referrer !== address?.toLowerCase()
+  const fee = calculateFee(DEPLOY_FEE, hasReferral)
+  const feeDisplay = hasReferral ? '0.0008 ETH (20% off!)' : '0.001 ETH'
 
   async function handleDeploy() {
     if (!walletClient || !address || !publicClient) return
@@ -85,29 +90,45 @@ export default function DeployPage() {
 
     try {
       const { encodeDeployData } = await import('viem')
-
       const initialSupply = parseUnits(supply || '1000000', parseInt(decimals || '18'))
+      const builderSuffix = toHex(new TextEncoder().encode(BUILDER_CODE))
 
-      const data = encodeDeployData({
+      const deployData = encodeDeployData({
         abi: ERC20_DEPLOY_ABI,
         bytecode: ERC20_BYTECODE,
         args: [name, symbol, initialSupply],
       })
 
-      // Builder Code suffix ekle
-      const suffix = toHex(new TextEncoder().encode(BUILDER_CODE))
-      const dataWithSuffix = concat([data, suffix]) as `0x${string}`
+      const data = concat([deployData, builderSuffix]) as `0x${string}`
 
-      const hash = await walletClient.sendTransaction({
+      // 1. Deploy fee → owner'a gönder
+      const feeHash = await walletClient.sendTransaction({
         account: address,
-        data: dataWithSuffix,
+        to: OWNER_ADDRESS,
+        value: fee,
+        chain: base,
+      })
+      await publicClient.waitForTransactionReceipt({ hash: feeHash })
+
+      // 2. Kontratı deploy et
+      const deployHash = await walletClient.sendTransaction({
+        account: address,
+        data,
         chain: base,
       })
 
-      setTxHash(hash)
+      setTxHash(deployHash)
+      await publicClient.waitForTransactionReceipt({ hash: deployHash })
 
-      // Receipt bekle
-      const receipt = await publicClient.waitForTransactionReceipt({ hash })
+      // 3. Referral komisyonunu kaydet
+      if (hasReferral && referrer) {
+        await fetch('/api/referral/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referrer, referee: address, feeAmount: Number(fee) / 1e18 }),
+        })
+      }
+
       setStatus('success')
     } catch (err: any) {
       setError(err.shortMessage || err.message || 'Deploy failed')
@@ -131,11 +152,8 @@ export default function DeployPage() {
     <AppLayout title="Deploy Contract">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* Type */}
         <div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Contract Type
-          </div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contract Type</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
             <TypeCard title="ERC20" desc="Fungible token" icon="◈" selected={deployType === 'ERC20'} onClick={() => setDeployType('ERC20')} />
             <TypeCard title="ERC721" desc="NFT collection" icon="◉" selected={deployType === 'ERC721'} onClick={() => setDeployType('ERC721')} />
@@ -143,7 +161,6 @@ export default function DeployPage() {
           </div>
         </div>
 
-        {/* Form */}
         <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db' }}>Parameters</div>
 
@@ -160,9 +177,10 @@ export default function DeployPage() {
           )}
 
           <div style={{ background: '#0a0b0f', border: '1px solid #1a1d27', borderRadius: '8px', padding: '12px', fontSize: '11px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            <div>⚡ Estimated gas: ~0.0005 ETH</div>
+            <div>💰 Deploy fee: {feeDisplay} → owner</div>
             <div>🔗 Network: Base Mainnet</div>
-            <div>📎 Builder Code: {BUILDER_CODE} (auto-tagged)</div>
+            <div>📎 Builder Code: {BUILDER_CODE}</div>
+            {hasReferral && <div style={{ color: '#4ade80' }}>🎉 Referral aktif — 20% indirim!</div>}
           </div>
 
           {error && (
@@ -186,13 +204,13 @@ export default function DeployPage() {
             disabled={status === 'deploying' || !name || !symbol}
             style={{
               width: '100%', padding: '12px',
-              background: status === 'deploying' || !name || !symbol ? '#1a1d27' : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              background: status === 'deploying' || !name || !symbol ? '#1a1d27' : 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
               border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '700',
               color: status === 'deploying' || !name || !symbol ? '#475569' : 'white',
               cursor: status === 'deploying' || !name || !symbol ? 'not-allowed' : 'pointer',
             }}
           >
-            {status === 'deploying' ? '🚀 Deploying...' : `Deploy ${deployType}`}
+            {status === 'deploying' ? '🚀 Deploying...' : `Deploy ${deployType} — ${feeDisplay}`}
           </button>
         </div>
       </div>
