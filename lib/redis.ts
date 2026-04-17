@@ -40,5 +40,20 @@ export const redis = {
       }
     }
     mem.set(key, value)
+  },
+
+  async setEx(key: string, ttlSeconds: number, value: any): Promise<void> {
+    const c = getClient()
+    if (c) {
+      try {
+        await c.set(key, value, { ex: ttlSeconds })
+        return
+      } catch (e) {
+        console.error('Redis setEx error:', e)
+      }
+    }
+    // In-memory fallback: store with expiry timestamp
+    mem.set(key, value)
+    setTimeout(() => mem.delete(key), ttlSeconds * 1000)
   }
 }
