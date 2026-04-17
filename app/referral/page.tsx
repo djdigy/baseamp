@@ -60,6 +60,28 @@ export default function ReferralPage() {
     <AppLayout title="Referral">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
+        {/* Score engine header */}
+        <div style={{ background: 'linear-gradient(135deg, #0a1a1a, #081a14)', border: '1px solid #2dd4bf33', borderRadius: '12px', padding: '16px 20px' }}>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: '#2dd4bf', marginBottom: '8px' }}>
+            Your network = your score engine
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div>
+              <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>You</div>
+              <div style={{ fontSize: '20px', fontWeight: '800', color: '#f1f5f9' }}>
+                {loading ? '...' : stats ? `${parseFloat(stats.totalEarned) > 0 ? '+' : ''}${stats.totalEarned} ETH` : '—'}
+              </div>
+            </div>
+            <div style={{ color: '#2dd4bf44', fontSize: '18px' }}>+</div>
+            <div>
+              <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '3px' }}>Network today</div>
+              <div style={{ fontSize: '20px', fontWeight: '800', color: '#2dd4bf' }}>
+                {loading ? '...' : stats ? `+${stats.dailyEarnings > 0 ? stats.dailyEarnings : 0}` : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Daily earnings notification */}
         {stats && stats.dailyEarnings > 0 && (
           <div style={{ background: '#052e16', border: '1px solid #16a34a', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>

@@ -229,12 +229,13 @@ export default function DashboardPage() {
               </div>
               {hasReferrals ? (
                 <div style={{ fontSize: '11px', color: '#2dd4bf99', marginTop: '6px' }}>
-                  +{dailyRefScore > 0 ? `${dailyRefScore.toFixed(4)}` : '—'} score from referrals today
+                  ⚡ +{dailyRefScore > 0 ? `${dailyRefScore.toFixed(4)}` : '—'} score from referrals today<br />
+                  <span style={{ color: '#2dd4bf55' }}>Your referrals will earn for you tomorrow too</span>
                 </div>
               ) : (
                 <Link href="/referral" style={{ textDecoration: 'none' }}>
                   <div style={{ fontSize: '11px', color: '#2dd4bf66', marginTop: '6px' }}>
-                    Invite friends → earn extra score daily
+                    Invite 1 friend → your score grows daily
                   </div>
                 </Link>
               )}
@@ -310,6 +311,34 @@ export default function DashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* Referral multiplier hook */}
+        <Link href="/referral" style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: 'var(--bg-card)', border: '1px solid #2dd4bf22',
+            borderRadius: '10px', padding: '12px 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            {hasReferrals ? (
+              <>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#2dd4bf' }}>⚡ Your network is earning for you</div>
+                  <div style={{ fontSize: '11px', color: '#2dd4bf66', marginTop: '2px' }}>
+                    +{dailyRefScore > 0 ? `${dailyRefScore.toFixed(4)}` : '—'} score from referrals today
+                  </div>
+                </div>
+                <span style={{ fontSize: '14px', color: '#2dd4bf44' }}>→</span>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '12px', color: '#2dd4bf66' }}>
+                  Invite 1 friend → your score grows daily
+                </div>
+                <span style={{ fontSize: '14px', color: '#2dd4bf33' }}>→</span>
+              </>
+            )}
+          </div>
+        </Link>
 
         {/* Stats */}
         <div>
