@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { referralStore } from '@/lib/referralStore'
+import { redis } from '@/lib/redis'
 
 export const dynamic = 'force-dynamic'
+
+interface ReferralData {
+  referrals: Array<{ address: string; date: string; earned: string }>
+  totalEarned: number
+}
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address')?.toLowerCase()
   if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 })
 
-  const data = referralStore.get(address)
+  const data = await redis.get<ReferralData>(`referral:${address}`) ?? { referrals: [], totalEarned: 0 }
 
   return NextResponse.json({
-    totalReferrals: data?.referrals.length ?? 0,
-    totalEarned: (data?.totalEarned ?? 0).toFixed(6),
-    referrals: data?.referrals ?? [],
+    totalReferrals: data.referrals.length,
+    totalEarned: data.totalEarned.toFixed(6),
+    referrals: data.referrals,
   })
 }
