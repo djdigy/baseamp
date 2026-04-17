@@ -1,108 +1,110 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
+import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect } from 'react'
-import { concat, toHex, parseEther } from 'viem'
+import { toHex } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, REFERRAL_DISCOUNT } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
-interface StreakData {
+interface GmData {
   streak: number
   gmmedToday: boolean
+  score: number
+  totalGms: number
   lastGm: string | null
 }
 
-function StreakEmoji({ streak }: { streak: number }) {
-  if (streak === 0) return <span style={{ fontSize: '48px' }}>💤</span>
-  if (streak < 3) return <span style={{ fontSize: '48px' }}>🔥</span>
-  if (streak < 7) return <span style={{ fontSize: '48px' }}>🔥🔥</span>
-  if (streak < 30) return <span style={{ fontSize: '48px' }}>🔥🔥🔥</span>
-  return <span style={{ fontSize: '48px' }}>👑</span>
+interface FeedItem { address: string; streak: number; time: number }
+
+const MILESTONES = [3, 5, 7, 14, 30]
+const MILESTONE_BONUS: Record<number, number> = { 3: 10, 5: 20, 7: 50, 14: 100, 30: 300 }
+
+function MilestoneBar({ streak }: { streak: number }) {
+  return (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      {MILESTONES.map(day => {
+        const done = streak >= day
+        const current = streak === day
+        return (
+          <div key={day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: done ? 'linear-gradient(135deg, #f97316, #ea580c)' : '#1a1d27',
+              border: `2px solid ${done ? '#f97316' : '#2d3148'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '12px',
+              boxShadow: current ? '0 0 12px #f97316aa' : 'none',
+              transition: 'all 0.3s',
+            }}>
+              {done ? '✓' : day}
+            </div>
+            <div style={{ fontSize: '9px', color: done ? '#f97316' : '#374151' }}>
+              +{MILESTONE_BONUS[day]}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function GmPage() {
   const { address, isConnected } = useAccount()
-  const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
+  const { sendTransactionAsync } = useSendTransaction()
   const { referrer } = useReferral()
 
-  const [streakData, setStreakData] = useState<StreakData>({ streak: 0, gmmedToday: false, lastGm: null })
+  const [data, setData] = useState<GmData>({ streak: 0, gmmedToday: false, score: 0, totalGms: 0, lastGm: null })
+  const [feed, setFeed] = useState<FeedItem[]>([])
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
-  const [txHash, setTxHash] = useState('')
+  const [earnedMsg, setEarnedMsg] = useState<{ score: number; milestone: { day: number; bonus: number } | null } | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
-
-  const hasReferral = !!referrer && referrer !== address?.toLowerCase()
-  const fee = calculateFee(GM_FEE, hasReferral)
-  const feeDisplay = hasReferral ? '0.00008 ETH (20% off!)' : '0.0001 ETH'
 
   useEffect(() => {
     if (!address) return
     setLoading(true)
-    fetch(`/api/gm/streak?address=${address}`)
-      .then(r => r.json())
-      .then(d => setStreakData(d))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
+      fetch('/api/gm/feed').then(r => r.json()),
+    ]).then(([streak, feedData]) => {
+      setData(streak)
+      setFeed(feedData.feed ?? [])
+    }).finally(() => setLoading(false))
   }, [address])
 
-  async function handleGM() {
-    if (!walletClient || !address || !publicClient) return
-    if (streakData.gmmedToday) return
+  const hasReferral = !!referrer && referrer !== address?.toLowerCase()
+  const fee = calculateFee(GM_FEE, hasReferral)
 
+  async function handleGM() {
+    if (!address || !publicClient || data.gmmedToday) return
     setStatus('sending')
     setError('')
-    setTxHash('')
+    setEarnedMsg(null)
 
     try {
-      const builderSuffix = toHex(new TextEncoder().encode(BUILDER_CODE))
-      const data = builderSuffix as `0x${string}`
-
-      // Fee: %10 referrer'a, %90 owner'a
-      let hash: `0x${string}`
-
-      if (hasReferral && referrer) {
-        // Önce referrer'a komisyon gönder (%10)
-        const referrerFee = (fee * 10n) / 100n
-        const ownerFee = fee - referrerFee
-
-        // Batch değil — tek TX owner'a, ayrı komisyon
-        hash = await walletClient.sendTransaction({
-          account: address,
-          to: OWNER_ADDRESS,
-          value: fee, // tüm fee owner'a
-          data,
-          chain: base,
-        })
-
-        // Referrer komisyonunu backend'e kaydet
-        await fetch('/api/referral/commission', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ referrer, referee: address, amount: referrerFee.toString() }),
-        })
-      } else {
-        hash = await walletClient.sendTransaction({
-          account: address,
-          to: OWNER_ADDRESS,
-          value: fee,
-          data,
-          chain: base,
-        })
-      }
-
-      setTxHash(hash)
+      const hash = await sendTransactionAsync({
+        to: OWNER_ADDRESS,
+        value: fee,
+        data: toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`,
+        chainId: base.id,
+      })
       await publicClient.waitForTransactionReceipt({ hash })
 
-      // Streak kaydet
       const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
-      const newData = await res.json()
-      setStreakData(newData)
+      const result = await res.json()
+
+      setData({ streak: result.streak, gmmedToday: true, score: result.score, totalGms: data.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) })
+      setEarnedMsg({ score: result.earned, milestone: result.milestone })
+
+      // Refresh feed
+      const feedRes = await fetch('/api/gm/feed').then(r => r.json())
+      setFeed(feedRes.feed ?? [])
       setStatus('success')
     } catch (err: any) {
-      setError(err.shortMessage || err.message || 'Transaction failed')
+      setError(err.shortMessage || err.message?.slice(0, 80) || 'Transaction failed')
       setStatus('error')
     }
   }
@@ -113,88 +115,132 @@ export default function GmPage() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <div style={{ fontSize: '48px' }}>☀</div>
           <div style={{ fontSize: '18px', fontWeight: '600' }}>Connect your wallet</div>
-          <div style={{ fontSize: '14px', color: '#475569' }}>Send your daily GM on Base</div>
+          <div style={{ fontSize: '14px', color: '#475569' }}>Send daily GM and earn score</div>
         </div>
       </AppLayout>
     )
   }
 
+  const nextMilestone = MILESTONES.find(m => m > data.streak)
+
   return (
     <AppLayout title="GM">
-      <div style={{ maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-        {/* Streak Card */}
+        {/* Score + Streak header */}
         <div style={{
-          background: streakData.gmmedToday ? 'linear-gradient(135deg, #052e16, #064e3b)' : 'linear-gradient(135deg, #1c1208, #2d1a00)',
-          border: `1px solid ${streakData.gmmedToday ? '#16a34a' : '#78350f'}`,
-          borderRadius: '16px', padding: '24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: data.gmmedToday ? 'linear-gradient(135deg, #052e16, #064e3b)' : 'linear-gradient(135deg, #1c1208, #2d1a00)',
+          border: `1px solid ${data.gmmedToday ? '#16a34a' : '#78350f'}`,
+          borderRadius: '16px', padding: '20px',
         }}>
-          <div>
-            <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: streakData.gmmedToday ? '#4ade80' : '#92400e', marginBottom: '8px' }}>
-              {streakData.gmmedToday ? "✅ Today's GM sent!" : '🔥 GM Streak'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: '11px', color: data.gmmedToday ? '#4ade80' : '#92400e', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                {data.gmmedToday ? '✅ GM Sent Today!' : '🔥 Daily GM'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '40px', fontWeight: '900', lineHeight: 1, color: data.gmmedToday ? '#4ade80' : '#f97316' }}>
+                    {loading ? '...' : data.streak}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#78350f', marginTop: '2px' }}>day streak</div>
+                </div>
+                <div style={{ width: '1px', height: '40px', background: '#2d2008' }} />
+                <div>
+                  <div style={{ fontSize: '28px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>
+                    {loading ? '...' : data.score}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#78350f', marginTop: '2px' }}>score</div>
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '48px', fontWeight: '900', lineHeight: 1, color: streakData.gmmedToday ? '#4ade80' : '#f97316' }}>
-              {loading ? '...' : streakData.streak}
-            </div>
-            <div style={{ fontSize: '12px', color: streakData.gmmedToday ? '#16a34a' : '#78350f', marginTop: '4px' }}>
-              {streakData.streak === 0 ? 'No streak yet — send your first GM!'
-                : streakData.gmmedToday ? `${streakData.streak} day streak — come back tomorrow!`
-                : `${streakData.streak} day streak — keep it going!`}
+            <div style={{ fontSize: '36px' }}>
+              {data.streak >= 30 ? '👑' : data.streak >= 7 ? '🔥' : data.streak >= 3 ? '⚡' : '☀'}
             </div>
           </div>
-          <StreakEmoji streak={loading ? 0 : streakData.streak} />
-        </div>
 
-        {/* Info */}
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {[
-            { icon: '☀', text: 'Send a GM transaction on Base daily' },
-            { icon: '🔥', text: "Build your streak — don't miss a day!" },
-            { icon: '📎', text: `Builder Code: ${BUILDER_CODE} (auto-tagged)` },
-            { icon: '💰', text: `Fee: ${feeDisplay}${hasReferral ? ' 🎉' : ''}` },
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#94a3b8' }}>
-              <span style={{ fontSize: '16px' }}>{item.icon}</span>
-              {item.text}
-            </div>
-          ))}
-          {hasReferral && (
-            <div style={{ background: '#052e16', border: '1px solid #166534', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#4ade80', marginTop: '4px' }}>
-              🎉 Referral aktif! 20% indirim uygulandı.
+          {/* Next milestone hint */}
+          {nextMilestone && !data.gmmedToday && (
+            <div style={{ marginTop: '12px', fontSize: '11px', color: '#78350f' }}>
+              {nextMilestone - data.streak} more day{nextMilestone - data.streak !== 1 ? 's' : ''} to Day {nextMilestone} — +{MILESTONE_BONUS[nextMilestone]} bonus score
             </div>
           )}
         </div>
 
-        {error && (
+        {/* Milestone bar */}
+        <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
+          <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
+            Milestones
+          </div>
+          <MilestoneBar streak={data.streak} />
+        </div>
+
+        {/* Earned message */}
+        {status === 'success' && earnedMsg && (
+          <div style={{ background: '#052e16', border: '1px solid #16a34a', borderRadius: '10px', padding: '14px 16px', animation: 'fadeIn 0.3s' }}>
+            <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>
+              GM sent 🚀 +{earnedMsg.score} score
+            </div>
+            {earnedMsg.milestone && (
+              <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
+                🎉 Day {earnedMsg.milestone.day} milestone! +{earnedMsg.milestone.bonus} bonus
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Error */}
+        {status === 'error' && error && (
           <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
             ❌ {error}
           </div>
         )}
 
-        {status === 'success' && txHash && (
-          <div style={{ background: '#052e16', border: '1px solid #166534', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#4ade80' }}>
-            <div style={{ fontWeight: '600', marginBottom: '6px' }}>🌅 GM sent! Streak updated.</div>
-            <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
-              style={{ color: '#22c55e', textDecoration: 'none', fontSize: '11px', wordBreak: 'break-all' }}>
-              View on Basescan →
-            </a>
+        {/* GM Button */}
+        <button
+          onClick={handleGM}
+          disabled={data.gmmedToday || status === 'sending'}
+          style={{
+            width: '100%', padding: '16px',
+            background: data.gmmedToday ? '#1a1d27' : status === 'sending' ? '#1a1d27' : 'linear-gradient(135deg, #f97316, #ea580c)',
+            border: data.gmmedToday ? '1px solid #22c55e' : 'none',
+            borderRadius: '12px', fontSize: '16px', fontWeight: '800',
+            color: data.gmmedToday ? '#22c55e' : status === 'sending' ? '#475569' : 'white',
+            cursor: data.gmmedToday || status === 'sending' ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {data.gmmedToday ? '✅ Come back tomorrow' : status === 'sending' ? '🌅 Sending...' : `☀ Send GM — earn +5 score`}
+        </button>
+
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Total GMs</div>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#f1f5f9' }}>{data.totalGms}</div>
+          </div>
+          <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Total Score</div>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#fbbf24' }}>{data.score}</div>
+          </div>
+        </div>
+
+        {/* Recent activity feed */}
+        {feed.length > 0 && (
+          <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
+            <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
+              Recent GMs
+            </div>
+            {feed.slice(0, 5).map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < Math.min(feed.length, 5) - 1 ? '1px solid #1a1d2744' : 'none' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace' }}>{item.address}</div>
+                <div style={{ fontSize: '11px', color: '#f97316' }}>
+                  {item.streak > 1 ? `🔥 ${item.streak} day streak` : '☀ GM'}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        <button
-          onClick={handleGM}
-          disabled={streakData.gmmedToday || status === 'sending'}
-          style={{
-            width: '100%', padding: '16px',
-            background: streakData.gmmedToday ? 'linear-gradient(135deg, #16a34a, #15803d)' : status === 'sending' ? '#1a1d27' : 'linear-gradient(135deg, #f97316, #ea580c)',
-            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: '800',
-            color: status === 'sending' ? '#475569' : 'white',
-            cursor: streakData.gmmedToday || status === 'sending' ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {streakData.gmmedToday ? '✅ GM Sent Today!' : status === 'sending' ? '🌅 Sending GM...' : `☀ Send GM — ${feeDisplay}`}
-        </button>
       </div>
     </AppLayout>
   )
