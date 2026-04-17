@@ -153,7 +153,7 @@ export default function GmPage() {
       const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
       const result = await res.json()
 
-      setData(prev => ({ ...prev, streak: result.streak, gmmedToday: true, score: result.score, totalGms: prev.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) }))
+      setData(prev => ({ ...prev, streak: result.streak, gmmedToday: true, score: result.score, totalGms: result.totalGms ?? prev.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) }))
       setEarnedMsg({ score: result.earned, milestone: result.milestone })
 
       const [feedRes, lbRes] = await Promise.all([

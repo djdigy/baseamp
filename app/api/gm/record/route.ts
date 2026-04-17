@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
   const newScore = (existing.score ?? 0) + calc.scoreEarned
   const newTotalGms = (existing.totalGms ?? 0) + 1
 
+  // Always persist — no early return path exists
   await redis.set(`gm:${address}`, {
     streak: calc.newStreak,
     lastDate: calc.isFirstToday ? today : existing.lastDate,
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
     gmmedToday: true,
     lastGm: today,
     score: newScore,
+    totalGms: newTotalGms,
     earned: calc.scoreEarned,
     referralBonus,
     isFirstToday: calc.isFirstToday,
