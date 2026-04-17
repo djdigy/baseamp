@@ -163,6 +163,7 @@ export default function GmPage() {
       setFeed(feedRes.feed ?? [])
       setLeaderboard(lbRes.entries ?? [])
       setStatus('success')
+      setTimeout(() => setStatus('idle'), 3000)
     } catch (err: any) {
       setError(err.shortMessage || err.message?.slice(0, 80) || 'Transaction failed')
       setStatus('error')
@@ -368,6 +369,9 @@ export default function GmPage() {
               <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#374151' }}>No scores yet — be first!</div>
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
+              const label = isMe
+                ? (entry.rank === 1 ? "You're #1 — for now" : 'You')
+                : `Player #${entry.rank}`
               return (
                 <div key={entry.address} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
@@ -376,9 +380,8 @@ export default function GmPage() {
                   borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
                 }}>
                   <RankBadge rank={entry.rank} />
-                  <div style={{ flex: 1, fontSize: '12px', fontFamily: 'monospace', color: isMe ? '#4ade80' : '#94a3b8' }}>
-                    {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                    {isMe && <span style={{ fontSize: '10px', marginLeft: '4px', color: '#16a34a' }}>(you)</span>}
+                  <div style={{ flex: 1, fontSize: '12px', fontWeight: isMe ? '700' : '400', color: isMe ? '#4ade80' : '#94a3b8' }}>
+                    {label}
                   </div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#fbbf24' }}>{entry.score}</div>
                 </div>
