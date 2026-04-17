@@ -188,6 +188,9 @@ export default function DashboardPage() {
               <div style={{ fontSize: '11px', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: '700', marginBottom: '6px' }}>
                 {t.todayAction}
               </div>
+              <div style={{ fontSize: '13px', color: '#86efaccc', marginBottom: '6px', fontWeight: '500' }}>
+                🎉 Nice — you showed up today
+              </div>
               <div style={{ fontSize: '18px', fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}>
                 {t.streakSecured}
               </div>
@@ -210,8 +213,13 @@ export default function DashboardPage() {
               )}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: '#4ade80', lineHeight: 1 }}>{streak}</div>
+              <div style={{
+                fontSize: '28px', fontWeight: '800', color: '#4ade80', lineHeight: 1,
+                animation: 'streakGlow 1.8s ease-out forwards',
+              }}>{streak}</div>
+              <style>{`@keyframes streakGlow { 0% { text-shadow: 0 0 12px #4ade80cc; } 100% { text-shadow: none; } }`}</style>
               <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>day streak</div>
+              <div style={{ fontSize: '10px', color: '#4ade8055', marginTop: '2px' }}>You're building consistency</div>
               {milestone && (
                 <div style={{ fontSize: '10px', color: '#16a34a88', marginTop: '3px' }}>
                   {milestone.daysLeft}d to Day {milestone.day} → +{milestone.bonus}
@@ -236,7 +244,7 @@ export default function DashboardPage() {
                   Day {streak} streak
                 </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '3px' }}>
-                  {t.progress}: Day {streak} → Day {streak + 1}
+                  Progressing: Day {streak} → Day {streak + 1}
                 </div>
                 <div style={{ fontSize: '12px', color: '#60a5fa66', marginBottom: '3px' }}>
                   +5 score when you continue
