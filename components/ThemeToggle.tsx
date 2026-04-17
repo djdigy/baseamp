@@ -8,8 +8,12 @@ export function ThemeToggle() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('ba_theme')
-      const dark = saved !== 'light'
-      setIsDark(dark)
+      if (saved) {
+        setIsDark(saved === 'dark')
+      } else {
+        // Fall back to system preference
+        setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
+      }
     } catch (_) {}
   }, [])
 
@@ -23,7 +27,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      title="Toggle theme"
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',

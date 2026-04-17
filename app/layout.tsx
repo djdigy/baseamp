@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   },
 }
 
-// Runs before paint to prevent flash
-const themeScript = `(function(){try{var t=localStorage.getItem('ba_theme');if(t==='light')document.documentElement.classList.add('light')}catch(e){}})()`
+// Runs before paint: uses saved pref or falls back to system preference
+const themeScript = `(function(){try{var s=localStorage.getItem('ba_theme');if(s){document.documentElement.classList.toggle('light',s==='light')}else{var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('light',!dark)}}catch(e){}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
