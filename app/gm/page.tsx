@@ -135,7 +135,7 @@ export default function GmPage() {
   const isUrgent = !data.gmmedToday && data.streak > 0 && countdown.totalSeconds < 10800
 
   async function handleGM() {
-    if (!address || !publicClient || data.gmmedToday) return
+    if (!address || !publicClient || status === 'sending') return
     setStatus('sending')
     setError('')
     setEarnedMsg(null)
@@ -153,7 +153,7 @@ export default function GmPage() {
       const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
       const result = await res.json()
 
-      setData({ streak: result.streak, gmmedToday: true, score: result.score, totalGms: data.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) })
+      setData(prev => ({ ...prev, streak: result.streak, gmmedToday: true, score: result.score, totalGms: prev.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) }))
       setEarnedMsg({ score: result.earned, milestone: result.milestone })
 
       const [feedRes, lbRes] = await Promise.all([
@@ -244,7 +244,7 @@ export default function GmPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e' }}>
-                  {data.gmmedToday ? '✅ GM Sent Today!' : '🔥 Daily GM'}
+                  {data.gmmedToday ? '✅ You're active today' : '🔥 Daily GM'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
                   <div>
@@ -291,33 +291,48 @@ export default function GmPage() {
             </div>
           )}
 
+          {/* After first GM of day — non-blocking info */}
+          {data.gmmedToday && status !== 'success' && (
+            <div style={{ background: '#052e16', border: '1px solid #16a34a44', borderRadius: '10px', padding: '12px 14px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#4ade80' }}>You're active today ✅</div>
+              <div style={{ fontSize: '12px', color: '#4ade8099', marginTop: '3px' }}>
+                Come back tomorrow to continue your streak
+              </div>
+              <div style={{ fontSize: '11px', color: '#2dd4bf88', marginTop: '5px' }}>More GM → more score</div>
+            </div>
+          )}
+
           {status === 'error' && error && (
             <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>❌ {error}</div>
           )}
 
-          {/* GM Button */}
-          <button
-            onClick={handleGM}
-            disabled={data.gmmedToday || status === 'sending'}
-            style={{
-              width: '100%', padding: '16px',
-              background: data.gmmedToday ? '#1a1d27'
-                : status === 'sending' ? '#1a1d27'
-                : isUrgent ? 'linear-gradient(135deg, #dc2626, #ea580c)'
-                : 'linear-gradient(135deg, #f97316, #ea580c)',
-              border: data.gmmedToday ? '1px solid #22c55e' : 'none',
-              borderRadius: '12px', fontSize: '16px', fontWeight: '800',
-              color: data.gmmedToday ? '#22c55e' : status === 'sending' ? '#475569' : 'white',
-              cursor: data.gmmedToday || status === 'sending' ? 'not-allowed' : 'pointer',
-              boxShadow: isUrgent && !data.gmmedToday ? '0 0 20px #ea580c55' : 'none',
-              transition: 'all 0.3s',
-            }}
-          >
-            {data.gmmedToday ? '✅ Come back tomorrow'
-              : status === 'sending' ? '🌅 Sending...'
-              : isUrgent ? '🚨 Send GM now — streak at risk!'
-              : '☀ Send GM — earn +5 score'}
-          </button>
+          {/* GM Button — always enabled */}
+          <div>
+            <button
+              onClick={handleGM}
+              disabled={status === 'sending'}
+              style={{
+                width: '100%', padding: '16px',
+                background: status === 'sending' ? '#1a1d27'
+                  : isUrgent && !data.gmmedToday ? 'linear-gradient(135deg, #dc2626, #ea580c)'
+                  : 'linear-gradient(135deg, #f97316, #ea580c)',
+                border: 'none',
+                borderRadius: '12px', fontSize: '16px', fontWeight: '800',
+                color: status === 'sending' ? '#475569' : 'white',
+                cursor: status === 'sending' ? 'not-allowed' : 'pointer',
+                boxShadow: isUrgent && !data.gmmedToday ? '0 0 20px #ea580c55' : 'none',
+                transition: 'all 0.3s',
+              }}
+            >
+              {status === 'sending' ? '🌅 Sending...'
+                : isUrgent && !data.gmmedToday ? '🚨 Send GM now — streak at risk!'
+                : data.gmmedToday ? '☀ Send another GM (+1 score)'
+                : '☀ Send GM — earn +5 score'}
+            </button>
+            <div style={{ fontSize: '11px', color: '#374151', textAlign: 'center', marginTop: '6px' }}>
+              Unlimited GM — only your first one counts for streak
+            </div>
+          </div>
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
