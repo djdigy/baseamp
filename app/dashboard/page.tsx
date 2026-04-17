@@ -118,15 +118,18 @@ export default function DashboardPage() {
                 Today's Action
               </div>
               <div style={{ fontSize: '18px', fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}>
-                ✅ GM sent today
+                You're done for today ✔
               </div>
               <div style={{ fontSize: '13px', color: '#4ade8099' }}>
-                Come back tomorrow to keep your streak
+                Come back in 24h to continue
               </div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: '28px', fontWeight: '800', color: '#4ade80', lineHeight: 1 }}>{streak}</div>
               <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>day streak</div>
+              <div style={{ fontSize: '10px', color: '#16a34a', marginTop: '3px' }}>
+                Next: Day {streak + 1} → +5 score
+              </div>
             </div>
           </div>
         ) : (
@@ -141,11 +144,22 @@ export default function DashboardPage() {
               Today's Action
             </div>
             <div style={{ fontSize: '20px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>
-              🔥 {streak > 0 ? 'Maintain your streak' : 'Start your daily streak'}
+              Today's action: Send GM
             </div>
-            <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px' }}>
-              Send GM and earn +5 score{streak > 0 ? ` · ${streak}-day streak at risk` : ''}
-            </div>
+            {streak > 0 ? (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>
+                  Day {streak} streak · Skip today → your streak resets
+                </div>
+                <div style={{ fontSize: '12px', color: '#60a5fa66' }}>
+                  Next: Day {streak + 1} → +5 score
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px' }}>
+                Start your streak — earn +5 score every day you show up
+              </div>
+            )}
             <Link href="/gm" style={{ textDecoration: 'none' }}>
               <button style={{
                 background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
@@ -159,7 +173,7 @@ export default function DashboardPage() {
                 boxShadow: '0 0 24px #3b82f630',
                 transition: 'opacity 0.15s',
               }}>
-                Send GM ☀
+                Send GM (+5 score)
               </button>
             </Link>
           </div>
