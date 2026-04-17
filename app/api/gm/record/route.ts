@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis'
 import { Redis } from '@upstash/redis'
+import { MILESTONE_BONUS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,9 +13,8 @@ interface ReferralData {
   lastEarningDate: string
 }
 
-const MILESTONES: Record<number, number> = { 3: 10, 5: 20, 7: 50, 14: 100, 30: 300 }
-const FIRST_GM_SCORE = 5   // first GM of the day
-const EXTRA_GM_SCORE = 1   // additional GMs same day
+const FIRST_GM_SCORE = 5
+const EXTRA_GM_SCORE = 1
 const REFERRAL_GM_BONUS = 2
 
 export async function POST(req: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   if (isFirstToday) {
     // First GM of the day: advance streak, award +5 + milestone bonus
     const newStreak = existing.lastDate === yesterday ? existing.streak + 1 : 1
-    const milestoneBonus = MILESTONES[newStreak] ?? 0
+    const milestoneBonus = MILESTONE_BONUS[newStreak] ?? 0
     const earned = FIRST_GM_SCORE + milestoneBonus
     const newScore = (existing.score ?? 0) + earned
     const newTotalGms = (existing.totalGms ?? 0) + 1

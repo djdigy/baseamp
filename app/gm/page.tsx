@@ -5,15 +5,13 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 import { toHex } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, MILESTONES, MILESTONE_BONUS } from '@/lib/constants'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 interface GmData { streak: number; gmmedToday: boolean; score: number; totalGms: number; lastGm: string | null }
 interface FeedItem { address: string; streak: number; time: number }
 interface LeaderboardEntry { address: string; score: number; rank: number }
 
-const MILESTONES = [3, 5, 7, 14, 30]
-const MILESTONE_BONUS: Record<number, number> = { 3: 10, 5: 20, 7: 50, 14: 100, 30: 300 }
 
 // Time until midnight UTC (streak reset)
 function getTimeUntilReset(): { hours: number; minutes: number; seconds: number; totalSeconds: number } {

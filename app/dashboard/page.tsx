@@ -5,6 +5,8 @@ import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+import { MILESTONES, MILESTONE_BONUS } from '@/lib/constants'
+
 // ── Types ───────────────────────────────────────────────────────────────────
 interface WalletStats { txCount: number; activeDays: number; builderScore: number; firstTx: string | null }
 interface GmStatus    { streak: number; gmmedToday: boolean; score: number }
@@ -88,10 +90,6 @@ const T = {
   },
 } as const
 type Lang = keyof typeof T
-
-// ── Milestones ───────────────────────────────────────────────────────────────
-const MILESTONES = [3, 5, 7, 14, 30, 60, 100]
-const MILESTONE_BONUS: Record<number, number> = { 3: 10, 5: 20, 7: 50, 14: 100, 30: 300, 60: 500, 100: 1000 }
 
 function nextMilestone(streak: number) {
   const next = MILESTONES.find(m => m > streak)
