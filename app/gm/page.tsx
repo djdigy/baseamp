@@ -9,13 +9,17 @@ import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
-interface GmData { streak: number; gmmedToday: boolean; score: number; totalGms: number; lastGm: string | null }
+interface GmData {
+  streak: number
+  gmmedToday: boolean
+  score: number
+  totalGms: number
+  lastGm: string | null
+}
 interface FeedItem { address: string; streak: number; time: number }
 interface LeaderboardEntry { address: string; score: number; rank: number }
 
-
-// Time until midnight UTC (streak reset)
-function getTimeUntilReset(): { hours: number; minutes: number; seconds: number; totalSeconds: number } {
+function getTimeUntilReset() {
   const now = new Date()
   const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
   const diff = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000))
@@ -54,7 +58,7 @@ function MilestoneBar({ streak }: { streak: number }) {
               fontSize: '12px', color: done ? 'white' : '#374151',
               boxShadow: streak === day ? '0 0 12px #f97316aa' : 'none',
             }}>
-              {done ? '✓' : day}
+              {done ? '\u2713' : day}
             </div>
             <div style={{ fontSize: '9px', color: done ? '#f97316' : '#374151' }}>+{bonus}</div>
           </div>
@@ -64,19 +68,12 @@ function MilestoneBar({ streak }: { streak: number }) {
   )
 }
 
-function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return <span style={{ fontSize: '16px' }}>🥇</span>
-  if (rank === 2) return <span style={{ fontSize: '16px' }}>🥈</span>
-  if (rank === 3) return <span style={{ fontSize: '16px' }}>🥉</span>
-  return <span style={{ fontSize: '12px', color: '#475569', minWidth: '20px', textAlign: 'center' }}>#{rank}</span>
-}
 
-// Urgency color based on hours left
 function getUrgencyColor(totalSeconds: number, gmmedToday: boolean): string {
   if (gmmedToday) return '#4ade80'
-  if (totalSeconds < 3600) return '#ef4444'   // < 1h: red
-  if (totalSeconds < 10800) return '#f97316'  // < 3h: orange
-  return '#fbbf24'                             // default: yellow
+  if (totalSeconds < 3600) return '#ef4444'
+  if (totalSeconds < 10800) return '#f97316'
+  return '#fbbf24'
 }
 
 export default function GmPage() {
@@ -103,28 +100,23 @@ export default function GmPage() {
       fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
       fetch('/api/gm/feed').then(r => r.json()),
       fetch('/api/leaderboard').then(r => r.json()),
-    ]).then(([streak, feedData, lb]) => {
-      // Detect streak loss: had streak > 0, now streak = 0 or 1 but lastGm is not yesterday
-      if (prevStreakRef.current !== null && prevStreakRef.current > 1 && streak.streak === 1 && !streak.gmmedToday) {
+    ]).then(([streakData, feedData, lb]) => {
+      if (prevStreakRef.current !== null && prevStreakRef.current > 1 && streakData.streak === 1 && !streakData.gmmedToday) {
         setStreakLost(true)
       }
-      prevStreakRef.current = streak.streak
-      setData(streak)
+      prevStreakRef.current = streakData.streak
+      setData(streakData)
       setFeed(feedData.feed ?? [])
       setLeaderboard(lb.entries ?? [])
     }).finally(() => setLoading(false))
   }, [address])
 
-  // Check streak loss on load: if lastGm is before yesterday, streak should have reset
   useEffect(() => {
     if (!data.lastGm || data.gmmedToday || data.streak === 0) return
-    const lastGmDate = new Date(data.lastGm)
     const yesterday = new Date()
     yesterday.setUTCDate(yesterday.getUTCDate() - 1)
     const yesterdayStr = yesterday.toISOString().slice(0, 10)
-    const lastGmStr = data.lastGm
-    // If lastGm is before yesterday and streak > 0 → streak was just lost
-    if (lastGmStr < yesterdayStr && prevStreakRef.current !== null && prevStreakRef.current > 1) {
+    if (data.lastGm < yesterdayStr && prevStreakRef.current !== null && prevStreakRef.current > 1) {
       setStreakLost(true)
     }
   }, [data])
@@ -153,7 +145,14 @@ export default function GmPage() {
       const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
       const result = await res.json()
 
-      setData(prev => ({ ...prev, streak: result.streak, gmmedToday: true, score: result.score, totalGms: result.totalGms ?? prev.totalGms + 1, lastGm: new Date().toISOString().slice(0, 10) }))
+      setData(prev => ({
+        ...prev,
+        streak: result.streak,
+        gmmedToday: true,
+        score: result.score,
+        totalGms: result.totalGms ?? prev.totalGms + 1,
+        lastGm: new Date().toISOString().slice(0, 10),
+      }))
       setEarnedMsg({ score: result.earned, milestone: result.milestone })
 
       const [feedRes, lbRes] = await Promise.all([
@@ -177,13 +176,32 @@ export default function GmPage() {
     return (
       <AppLayout title="GM">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
-          <div style={{ fontSize: '48px' }}>☀</div>
+          <div style={{ fontSize: '48px' }}>&#9728;</div>
           <div style={{ fontSize: '18px', fontWeight: '600' }}>Connect your wallet</div>
           <div style={{ fontSize: '14px', color: '#475569' }}>Send daily GM and earn score</div>
         </div>
       </AppLayout>
     )
   }
+
+  const btnLabel = status === 'sending'
+    ? 'Sending...'
+    : isUrgent && !data.gmmedToday
+      ? 'Send GM now — streak at risk!'
+      : data.gmmedToday
+        ? 'Send another GM (+1 score)'
+        : 'Send GM — earn +5 score'
+
+  const btnHint = data.gmmedToday
+    ? "You're active today — keep going (+1 per GM)"
+    : 'Unlimited GM — only your first one counts for streak'
+
+  const streakIcon = data.gmmedToday ? '\u2705'
+    : isUrgent ? '\u23F3'
+    : data.streak >= 30 ? '\uD83D\uDC51'
+    : data.streak >= 7 ? '\uD83D\uDD25'
+    : data.streak >= 3 ? '\u26A1'
+    : '\u2600'
 
   return (
     <AppLayout title="GM">
@@ -195,15 +213,15 @@ export default function GmPage() {
           {/* Streak loss banner */}
           {streakLost && !data.gmmedToday && (
             <div style={{ background: '#1a0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>💔</span>
+              <span style={{ fontSize: '20px' }}>\uD83D\uDC94</span>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>Streak lost. Start again 🔁</div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>Streak lost. Start again</div>
                 <div style={{ fontSize: '11px', color: '#7f1d1d', marginTop: '2px' }}>Send GM today to begin a new streak</div>
               </div>
             </div>
           )}
 
-          {/* Warning: hasn't sent GM today + has active streak */}
+          {/* Urgency warning */}
           {!data.gmmedToday && data.streak > 0 && !streakLost && (
             <div style={{
               background: isUrgent ? '#1a0d00' : '#1a1208',
@@ -212,60 +230,64 @@ export default function GmPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>{isUrgent ? '🚨' : '⚠️'}</span>
+                <span style={{ fontSize: '18px' }}>{isUrgent ? '\uD83D\uDEA8' : '\u26A0\uFE0F'}</span>
                 <div style={{ fontSize: '13px', fontWeight: '600', color: isUrgent ? '#f97316' : '#fbbf24' }}>
                   Send GM today or lose your {data.streak}-day streak
                 </div>
               </div>
               <div style={{
                 fontSize: '13px', fontWeight: '700', fontFamily: 'monospace',
-                color: urgencyColor,
-                background: '#0a0b0f', padding: '4px 10px', borderRadius: '6px',
-                border: `1px solid ${urgencyColor}44`,
+                color: urgencyColor, background: '#0a0b0f', padding: '4px 10px',
+                borderRadius: '6px', border: `1px solid ${urgencyColor}44`,
               }}>
                 {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
               </div>
             </div>
           )}
 
-          {/* Streak resets in X — shown when no streak at risk */}
+          {/* No streak countdown */}
           {!data.gmmedToday && data.streak === 0 && (
             <div style={{ fontSize: '11px', color: '#374151', textAlign: 'right' }}>
               Streak resets in {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
             </div>
           )}
 
-          {/* Main card */}
+          {/* Main stats card */}
           <div style={{
-            background: data.gmmedToday ? 'linear-gradient(135deg, #052e16, #064e3b)' : isUrgent ? 'linear-gradient(135deg, #1a0800, #2d1000)' : 'linear-gradient(135deg, #1c1208, #2d1a00)',
+            background: data.gmmedToday
+              ? 'linear-gradient(135deg, #052e16, #064e3b)'
+              : isUrgent
+                ? 'linear-gradient(135deg, #1a0800, #2d1000)'
+                : 'linear-gradient(135deg, #1c1208, #2d1a00)',
             border: `1px solid ${data.gmmedToday ? '#16a34a' : isUrgent ? '#ea580c' : '#78350f'}`,
-            borderRadius: '16px', padding: '20px',
-            transition: 'all 0.5s',
+            borderRadius: '16px', padding: '20px', transition: 'all 0.5s',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e' }}>
-                  {data.gmmedToday ? "✅ You're active today" : '🔥 Daily GM'}
+                <div style={{
+                  fontSize: '11px', fontWeight: '700', textTransform: 'uppercase',
+                  letterSpacing: '0.08em', marginBottom: '8px',
+                  color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e',
+                }}>
+                  {data.gmmedToday ? 'GM Sent Today!' : 'Daily GM'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
                   <div>
                     <div style={{ fontSize: '44px', fontWeight: '900', lineHeight: 1, color: urgencyColor, transition: 'color 0.5s' }}>
-                      {loading ? '…' : data.streak}
+                      {loading ? '...' : data.streak}
                     </div>
                     <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : '#78350f' }}>day streak</div>
                   </div>
                   <div style={{ width: '1px', height: '44px', background: '#2d2008' }} />
                   <div>
                     <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>
-                      {loading ? '…' : data.score}
+                      {loading ? '...' : data.score}
                     </div>
                     <div style={{ fontSize: '11px', marginTop: '2px', color: '#78350f' }}>score</div>
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: '40px' }}>
-                {data.gmmedToday ? '✅' : isUrgent ? '⏳' : data.streak >= 30 ? '👑' : data.streak >= 7 ? '🔥' : data.streak >= 3 ? '⚡' : '☀'}
-              </div>
+              <div style={{ fontSize: '40px' }}>{streakIcon}</div>
             </div>
             {nextMilestoneData && !data.gmmedToday && (
               <div style={{ marginTop: '10px', fontSize: '11px', color: '#78350f' }}>
@@ -283,17 +305,20 @@ export default function GmPage() {
           {/* Earned message */}
           {status === 'success' && earnedMsg && (
             <div style={{ background: '#052e16', border: '1px solid #16a34a', borderRadius: '10px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>GM sent 🚀 +{earnedMsg.score} score</div>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>GM sent +{earnedMsg.score} score</div>
               {earnedMsg.milestone && (
                 <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
-                  🎉 Day {earnedMsg.milestone.day} milestone! +{earnedMsg.milestone.bonus} bonus
+                  Day {earnedMsg.milestone.day} milestone! +{earnedMsg.milestone.bonus} bonus
                 </div>
               )}
             </div>
           )}
 
+          {/* Error */}
           {status === 'error' && error && (
-            <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>❌ {error}</div>
+            <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
+              {error}
+            </div>
           )}
 
           {/* GM Button — always rendered, never replaced */}
@@ -303,26 +328,23 @@ export default function GmPage() {
               disabled={status === 'sending'}
               style={{
                 width: '100%', padding: '16px',
-                background: status === 'sending' ? '#1a1d27'
-                  : isUrgent && !data.gmmedToday ? 'linear-gradient(135deg, #dc2626, #ea580c)'
-                  : 'linear-gradient(135deg, #f97316, #ea580c)',
-                border: 'none',
-                borderRadius: '12px', fontSize: '16px', fontWeight: '800',
+                background: status === 'sending'
+                  ? '#1a1d27'
+                  : isUrgent && !data.gmmedToday
+                    ? 'linear-gradient(135deg, #dc2626, #ea580c)'
+                    : 'linear-gradient(135deg, #f97316, #ea580c)',
+                border: 'none', borderRadius: '12px',
+                fontSize: '16px', fontWeight: '800',
                 color: status === 'sending' ? '#475569' : 'white',
                 cursor: status === 'sending' ? 'not-allowed' : 'pointer',
                 boxShadow: isUrgent && !data.gmmedToday ? '0 0 20px #ea580c55' : 'none',
                 transition: 'all 0.3s',
               }}
             >
-              {status === 'sending' ? '🌅 Sending...'
-                : isUrgent && !data.gmmedToday ? '🚨 Send GM now — streak at risk!'
-                : data.gmmedToday ? '☀ Send another GM (+1 score)'
-                : '☀ Send GM — earn +5 score'}
+              {btnLabel}
             </button>
             <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center', marginTop: '6px' }}>
-              {data.gmmedToday
-                ? "You're active today — keep going (+1 per GM)"
-                : 'Unlimited GM — only your first one counts for streak'}
+              {btnHint}
             </div>
           </div>
 
@@ -354,14 +376,14 @@ export default function GmPage() {
           {/* Leaderboard */}
           <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1d27', fontSize: '12px', fontWeight: '700', color: '#d1d5db' }}>
-              🏆 Leaderboard
+              Leaderboard
             </div>
             {leaderboard.length === 0 ? (
               <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#374151' }}>No scores yet — be first!</div>
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
               const label = isMe
-                ? (entry.rank === 1 ? "You're #1 — for now" : 'You')
+                ? (entry.rank === 1 ? "You're #1" : 'You')
                 : `Player #${entry.rank}`
               return (
                 <div key={entry.address} style={{
@@ -370,7 +392,9 @@ export default function GmPage() {
                   background: isMe ? '#1e2a1e' : 'transparent',
                   borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
                 }}>
-                  <RankBadge rank={entry.rank} />
+                  <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: '#475569', minWidth: '20px', textAlign: 'center' }}>
+                    {entry.rank === 1 ? '\uD83E\uDD47' : entry.rank === 2 ? '\uD83E\uDD48' : entry.rank === 3 ? '\uD83E\uDD49' : `#${entry.rank}`}
+                  </span>
                   <div style={{ flex: 1, fontSize: '12px', fontWeight: isMe ? '700' : '400', color: isMe ? '#4ade80' : '#94a3b8' }}>
                     {label}
                   </div>
@@ -389,7 +413,7 @@ export default function GmPage() {
               {feed.slice(0, 5).map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid #1a1d2744' : 'none' }}>
                   <div style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace' }}>{item.address}</div>
-                  <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `🔥 ${item.streak}d` : '☀'}</div>
+                  <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `${item.streak}d` : 'GM'}</div>
                 </div>
               ))}
             </div>
