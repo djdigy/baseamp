@@ -3,7 +3,10 @@ import { Redis } from '@upstash/redis'
 let client: Redis | null = null
 
 function getClient(): Redis | null {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    console.warn('[redis] Client not configured — KV_REST_API_URL or KV_REST_API_TOKEN missing')
+    return null
+  }
   if (!client) {
     client = new Redis({
       url: process.env.KV_REST_API_URL,
@@ -19,42 +22,40 @@ const mem = new Map<string, any>()
 export const redis = {
   async get<T = any>(key: string): Promise<T | null> {
     const c = getClient()
-    if (c) {
-      try {
-        return await c.get<T>(key)
-      } catch (e) {
-        console.error('Redis get error:', e)
-      }
+    if (!c) return mem.get(key) ?? null
+    try {
+      return await c.get<T>(key)
+    } catch (e) {
+      console.warn(`[redis] get('${key}') failed:`, e)
+      return mem.get(key) ?? null
     }
-    return mem.get(key) ?? null
   },
 
   async set(key: string, value: any): Promise<void> {
     const c = getClient()
-    if (c) {
-      try {
-        await c.set(key, value)
-        return
-      } catch (e) {
-        console.error('Redis set error:', e)
-      }
+    if (!c) { mem.set(key, value); return }
+    try {
+      await c.set(key, value)
+    } catch (e) {
+      console.warn(`[redis] set('${key}') failed:`, e)
+      mem.set(key, value)
     }
-    mem.set(key, value)
   },
 
   async setEx(key: string, ttlSeconds: number, value: any): Promise<void> {
     const c = getClient()
-    if (c) {
-      try {
-        await c.set(key, value, { ex: ttlSeconds })
-        return
-      } catch (e) {
-        console.error('Redis setEx error:', e)
-      }
+    if (!c) {
+      mem.set(key, value)
+      setTimeout(() => mem.delete(key), ttlSeconds * 1000)
+      return
     }
-    // In-memory fallback: store with expiry timestamp
-    mem.set(key, value)
-    setTimeout(() => mem.delete(key), ttlSeconds * 1000)
+    try {
+      await c.set(key, value, { ex: ttlSeconds })
+    } catch (e) {
+      console.warn(`[redis] setEx('${key}', ${ttlSeconds}) failed:`, e)
+      mem.set(key, value)
+      setTimeout(() => mem.delete(key), ttlSeconds * 1000)
+    }
   },
 
   async zadd(key: string, score: number, member: string): Promise<void> {
@@ -63,7 +64,7 @@ export const redis = {
     try {
       await c.zadd(key, { score, member })
     } catch (e) {
-      console.error('Redis zadd error:', e)
+      console.warn(`[redis] zadd('${key}', score=${score}, member='${member}') failed:`, e)
     }
   },
 
@@ -73,7 +74,7 @@ export const redis = {
     try {
       return await c.zrange(key, start, stop, opts)
     } catch (e) {
-      console.error('Redis zrange error:', e)
+      console.warn(`[redis] zrange('${key}', ${start}, ${stop}) failed:`, e)
       return []
     }
   },
