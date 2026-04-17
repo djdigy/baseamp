@@ -13,6 +13,12 @@ interface WalletStats {
   firstTx: string | null
 }
 
+interface GmStatus {
+  streak: number
+  gmmedToday: boolean
+  score: number
+}
+
 function StatCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
@@ -23,29 +29,35 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   )
 }
 
-const QUICK_ACTIONS = [
-  { title: '💰 Earn Yield', desc: 'Morpho & Aave vaults', href: '/earn', color: '#22c55e', border: '#16a34a' },
-  { title: '🔁 Swap Tokens', desc: '17 DEXes on Base', href: '/swap', color: '#3b82f6', border: '#2563eb' },
-  { title: '🚀 Deploy Contract', desc: 'ERC20, ERC721, ERC1155', href: '/deploy', color: '#8b5cf6', border: '#7c3aed' },
-  { title: '☀ Send GM', desc: 'Daily streak + Builder Code', href: '/gm', color: '#f97316', border: '#ea580c' },
-  { title: '👥 Referral', desc: 'Earn 10% commission', href: '/referral', color: '#2dd4bf', border: '#0d9488' },
+const SECONDARY_ACTIONS = [
+  { title: '💰 Earn Yield', desc: 'Morpho & Aave vaults', href: '/earn', border: '#16a34a' },
+  { title: '🔁 Swap Tokens', desc: '17 DEXes on Base', href: '/swap', border: '#2563eb' },
+  { title: '🚀 Deploy Contract', desc: 'ERC20, ERC721, ERC1155', href: '/deploy', border: '#7c3aed' },
+  { title: '👥 Referral', desc: 'Earn 10% commission', href: '/referral', border: '#0d9488' },
 ]
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const [stats, setStats] = useState<WalletStats | null>(null)
+  const [gmStatus, setGmStatus] = useState<GmStatus | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!address) return
     setLoading(true)
-    fetch(`/api/wallet-stats?address=${address}`)
-      .then(r => r.json())
-      .then(d => setStats(d))
+    Promise.all([
+      fetch(`/api/wallet-stats?address=${address}`).then(r => r.json()),
+      fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
+    ])
+      .then(([walletData, gmData]) => {
+        setStats(walletData)
+        setGmStatus(gmData)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [address])
 
+  // ── Not connected ────────────────────────────────────────────────────────
   if (!isConnected) {
     return (
       <AppLayout title="Dashboard">
@@ -56,7 +68,7 @@ export default function DashboardPage() {
               Welcome to BaseAmp
             </div>
             <div style={{ fontSize: '14px', color: '#475569', maxWidth: '340px', lineHeight: '1.6' }}>
-              Your Base network dashboard. Connect wallet to see your stats, earn yield, deploy contracts and more.
+              Connect your wallet to start earning on Base.
             </div>
           </div>
 
@@ -80,9 +92,78 @@ export default function DashboardPage() {
     )
   }
 
+  // ── Primary action state ─────────────────────────────────────────────────
+  const gmmedToday = gmStatus?.gmmedToday ?? false
+  const streak = gmStatus?.streak ?? 0
+
   return (
     <AppLayout title="Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+        {/* ── PRIMARY ACTION BLOCK ─────────────────────────────────────── */}
+        {gmmedToday ? (
+          // GM done state
+          <div style={{
+            background: 'linear-gradient(135deg, #052e16, #064e3b)',
+            border: '1px solid #16a34a55',
+            borderRadius: '14px',
+            padding: '20px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}>
+            <div>
+              <div style={{ fontSize: '11px', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: '700', marginBottom: '6px' }}>
+                Today's Action
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}>
+                ✅ GM sent today
+              </div>
+              <div style={{ fontSize: '13px', color: '#4ade8099' }}>
+                Come back tomorrow to keep your streak
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontSize: '28px', fontWeight: '800', color: '#4ade80', lineHeight: 1 }}>{streak}</div>
+              <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>day streak</div>
+            </div>
+          </div>
+        ) : (
+          // No GM yet — primary CTA
+          <div style={{
+            background: 'linear-gradient(135deg, #0f1a2e, #1a0f2e)',
+            border: '1px solid #2563eb55',
+            borderRadius: '14px',
+            padding: '20px 24px',
+          }}>
+            <div style={{ fontSize: '11px', color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: '700', marginBottom: '8px' }}>
+              Today's Action
+            </div>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: '#f1f5f9', marginBottom: '4px' }}>
+              🔥 {streak > 0 ? 'Maintain your streak' : 'Start your daily streak'}
+            </div>
+            <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px' }}>
+              Send GM and earn +5 score{streak > 0 ? ` · ${streak}-day streak at risk` : ''}
+            </div>
+            <Link href="/gm" style={{ textDecoration: 'none' }}>
+              <button style={{
+                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '13px 28px',
+                fontSize: '15px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 0 24px #3b82f630',
+                transition: 'opacity 0.15s',
+              }}>
+                Send GM ☀
+              </button>
+            </Link>
+          </div>
+        )}
 
         {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
@@ -103,68 +184,88 @@ export default function DashboardPage() {
             color="#60a5fa"
           />
           <StatCard
-            label="Wallet"
-            value={address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '—'}
-            sub="Base mainnet"
-            color="#22c55e"
+            label="GM Score"
+            value={loading ? '...' : (gmStatus?.score?.toString() ?? '—')}
+            sub="from daily GMs"
+            color="#f97316"
           />
         </div>
 
-        {/* Quick actions */}
+        {/* Quick actions — GM is dominant, others secondary */}
         <div>
           <div style={{ fontSize: '12px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: '600' }}>
-            Quick Actions
+            Actions
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
-            {QUICK_ACTIONS.map(action => (
-              <Link key={action.href} href={action.href} style={{ textDecoration: 'none' }}>
-                <div style={{
-                  background: '#0f1117',
-                  border: '1px solid #1a1d27',
-                  borderRadius: '12px',
-                  padding: '14px',
-                  cursor: 'pointer',
-                  transition: 'border-color 0.15s',
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = action.border)}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#1a1d27')}
-                >
-                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>{action.title.split(' ')[0]}</div>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0', marginBottom: '3px' }}>
-                    {action.title.split(' ').slice(1).join(' ')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+            {/* GM — visually dominant */}
+            <Link href="/gm" style={{ textDecoration: 'none' }}>
+              <div style={{
+                background: gmmedToday ? '#0a1a0a' : '#0f1117',
+                border: `1px solid ${gmmedToday ? '#16a34a44' : '#f9731633'}`,
+                borderRadius: '12px',
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                transition: 'border-color 0.15s',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = gmmedToday ? '#16a34a88' : '#f97316')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = gmmedToday ? '#16a34a44' : '#f9731633')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '22px' }}>☀</span>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#f1f5f9' }}>
+                      Send GM {gmmedToday ? '✅' : ''}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '1px' }}>
+                      {gmmedToday ? `Done · ${streak}-day streak` : 'Daily streak + +5 score'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#475569' }}>{action.desc}</div>
                 </div>
-              </Link>
-            ))}
+                <span style={{ fontSize: '16px', color: '#374151' }}>→</span>
+              </div>
+            </Link>
+
+            {/* Secondary actions — lower contrast, 2-column grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {SECONDARY_ACTIONS.map(action => (
+                <Link key={action.href} href={action.href} style={{ textDecoration: 'none' }}>
+                  <div style={{
+                    background: '#0a0c12',
+                    border: '1px solid #13161f',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.15s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = action.border)}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = '#13161f')}
+                  >
+                    <div style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: '600', marginBottom: '2px' }}>
+                      {action.title}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#374151' }}>{action.desc}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Wallet info */}
+        {/* Wallet info + builder code — condensed, no noise */}
         <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '11px', color: '#475569', marginBottom: '4px' }}>Connected Wallet</div>
             <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#94a3b8' }}>{address}</div>
+            <div style={{ fontSize: '10px', color: '#374151', marginTop: '3px' }}>Builder Code: bc_grji576m</div>
           </div>
           <a href={`https://basescan.org/address/${address}`} target="_blank" rel="noopener noreferrer"
             style={{ fontSize: '12px', color: '#60a5fa', textDecoration: 'none', padding: '6px 12px', background: '#172554', borderRadius: '6px', border: '1px solid #1e3a5f' }}>
             Basescan ↗
           </a>
-        </div>
-
-        {/* Network info */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-          {[
-            { label: 'Network', value: 'Base Mainnet', sub: 'Chain ID: 8453', color: '#3b82f6' },
-            { label: 'Builder Code', value: 'bc_grji576m', sub: 'Auto-tagged on TXs', color: '#8b5cf6' },
-            { label: 'Status', value: '🟢 Live', sub: 'All systems operational', color: '#22c55e' },
-          ].map((item, i) => (
-            <div key={i} style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>{item.label}</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: item.color }}>{item.value}</div>
-              <div style={{ fontSize: '11px', color: '#374151', marginTop: '3px' }}>{item.sub}</div>
-            </div>
-          ))}
         </div>
 
       </div>
