@@ -292,22 +292,11 @@ export default function GmPage() {
             </div>
           )}
 
-          {/* After first GM of day — non-blocking info */}
-          {data.gmmedToday && status !== 'success' && (
-            <div style={{ background: '#052e16', border: '1px solid #16a34a44', borderRadius: '10px', padding: '12px 14px' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#4ade80' }}>You're active today ✅</div>
-              <div style={{ fontSize: '12px', color: '#4ade8099', marginTop: '3px' }}>
-                Come back tomorrow to continue your streak
-              </div>
-              <div style={{ fontSize: '11px', color: '#2dd4bf88', marginTop: '5px' }}>More GM → more score</div>
-            </div>
-          )}
-
           {status === 'error' && error && (
             <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>❌ {error}</div>
           )}
 
-          {/* GM Button — always enabled */}
+          {/* GM Button — always rendered, never replaced */}
           <div>
             <button
               onClick={handleGM}
@@ -330,8 +319,10 @@ export default function GmPage() {
                 : data.gmmedToday ? '☀ Send another GM (+1 score)'
                 : '☀ Send GM — earn +5 score'}
             </button>
-            <div style={{ fontSize: '11px', color: '#374151', textAlign: 'center', marginTop: '6px' }}>
-              Unlimited GM — only your first one counts for streak
+            <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center', marginTop: '6px' }}>
+              {data.gmmedToday
+                ? "You're active today — keep going (+1 per GM)"
+                : 'Unlimited GM — only your first one counts for streak'}
             </div>
           </div>
 
