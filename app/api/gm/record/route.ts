@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis'
-import { Redis } from '@upstash/redis'
 import { MILESTONE_BONUS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -53,19 +52,13 @@ export async function POST(req: NextRequest) {
       if (referrerGm) {
         referrerGm.score = (referrerGm.score ?? 0) + REFERRAL_GM_BONUS
         await redis.set(`gm:${referrerAddr}`, referrerGm)
-        try {
-          const client = new Redis({ url: process.env.KV_REST_API_URL!, token: process.env.KV_REST_API_TOKEN! })
-          await client.zadd('leaderboard', { score: referrerGm.score, member: referrerAddr })
-        } catch { /* non-blocking */ }
+        await redis.zadd('leaderboard', referrerGm.score, referrerAddr)
       }
       referralBonus = REFERRAL_GM_BONUS
     }
 
     // Update leaderboard
-    try {
-      const client = new Redis({ url: process.env.KV_REST_API_URL!, token: process.env.KV_REST_API_TOKEN! })
-      await client.zadd('leaderboard', { score: newScore, member: address })
-    } catch { /* non-blocking */ }
+    await redis.zadd('leaderboard', newScore, address)
 
     // Activity feed
     const feed = await redis.get<Array<{ address: string; streak: number; time: number }>>('gm:feed') ?? []
@@ -86,10 +79,7 @@ export async function POST(req: NextRequest) {
     await redis.set(`gm:${address}`, { ...existing, totalGms: newTotalGms, score: newScore })
 
     // Update leaderboard with new score
-    try {
-      const client = new Redis({ url: process.env.KV_REST_API_URL!, token: process.env.KV_REST_API_TOKEN! })
-      await client.zadd('leaderboard', { score: newScore, member: address })
-    } catch { /* non-blocking */ }
+    await redis.zadd('leaderboard', newScore, address)
 
     return NextResponse.json({
       streak: existing.streak, gmmedToday: true, lastGm: today,

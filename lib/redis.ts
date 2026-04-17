@@ -55,5 +55,26 @@ export const redis = {
     // In-memory fallback: store with expiry timestamp
     mem.set(key, value)
     setTimeout(() => mem.delete(key), ttlSeconds * 1000)
-  }
+  },
+
+  async zadd(key: string, score: number, member: string): Promise<void> {
+    const c = getClient()
+    if (!c) return
+    try {
+      await c.zadd(key, { score, member })
+    } catch (e) {
+      console.error('Redis zadd error:', e)
+    }
+  },
+
+  async zrange(key: string, start: number, stop: number, opts?: { rev?: boolean; withScores?: boolean }): Promise<any[]> {
+    const c = getClient()
+    if (!c) return []
+    try {
+      return await c.zrange(key, start, stop, opts)
+    } catch (e) {
+      console.error('Redis zrange error:', e)
+      return []
+    }
+  },
 }
