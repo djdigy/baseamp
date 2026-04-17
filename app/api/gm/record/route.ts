@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis'
+import { Redis } from '@upstash/redis'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,10 +31,17 @@ export async function POST(req: NextRequest) {
   const updated: GmData = { streak: newStreak, lastDate: today, totalGms: newTotalGms, score: newScore }
   await redis.set(`gm:${address}`, updated)
 
-  // Recent activity feed
-  const activity = { address: address.slice(0, 6) + '...' + address.slice(-4), streak: newStreak, time: Date.now() }
-  const feed = await redis.get<typeof activity[]>('gm:feed') ?? []
-  feed.unshift(activity)
+  // Update leaderboard sorted set
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    try {
+      const client = new Redis({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN })
+      await client.zadd('leaderboard', { score: newScore, member: address })
+    } catch { /* non-blocking */ }
+  }
+
+  // Update activity feed
+  const feed = await redis.get<Array<{ address: string; streak: number; time: number }>>('gm:feed') ?? []
+  feed.unshift({ address: address.slice(0, 6) + '...' + address.slice(-4), streak: newStreak, time: Date.now() })
   await redis.set('gm:feed', feed.slice(0, 10))
 
   return NextResponse.json({
