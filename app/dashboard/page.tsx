@@ -102,7 +102,7 @@ function ShareStreak({ streak }: { streak: number }) {
   const targetDay = milestone?.day ?? 7
 
   function handleShare() {
-    const text = `🔥 Day ${streak} streak on BaseAmp\nDidn't break it today.\nGoing for Day ${targetDay} bonus 🚀\nJoin me: baseamp.vercel.app 👀`
+    const text = `🔥 Day ${streak} streak on BaseAmp\nDidn't break it today.\nGoing for Day ${targetDay} bonus 🚀\nCan you keep up?\nbaseamp.vercel.app 👀`
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2200)
