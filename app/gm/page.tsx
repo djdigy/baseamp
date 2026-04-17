@@ -5,8 +5,8 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 import { toHex } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, MILESTONES, MILESTONE_BONUS } from '@/lib/constants'
-import { getNextMilestone } from '@/lib/gm'
+import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
+import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 interface GmData { streak: number; gmmedToday: boolean; score: number; totalGms: number; lastGm: string | null }
@@ -39,9 +39,10 @@ function useCountdown() {
 function pad(n: number) { return String(n).padStart(2, '0') }
 
 function MilestoneBar({ streak }: { streak: number }) {
+  const milestones = getMilestones()
   return (
     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-      {MILESTONES.map(day => {
+      {milestones.map(({ day, bonus }) => {
         const done = streak >= day
         return (
           <div key={day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
@@ -55,7 +56,7 @@ function MilestoneBar({ streak }: { streak: number }) {
             }}>
               {done ? '✓' : day}
             </div>
-            <div style={{ fontSize: '9px', color: done ? '#f97316' : '#374151' }}>+{MILESTONE_BONUS[day]}</div>
+            <div style={{ fontSize: '9px', color: done ? '#f97316' : '#374151' }}>+{bonus}</div>
           </div>
         )
       })}

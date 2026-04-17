@@ -39,6 +39,11 @@ export function calculateGM({
   return { newStreak, scoreEarned, milestoneBonus, isFirstToday: true }
 }
 
+/** Returns the ordered list of milestone days with their bonuses. */
+export function getMilestones(): Array<{ day: number; bonus: number }> {
+  return MILESTONES.map(day => ({ day, bonus: MILESTONE_BONUS[day] }))
+}
+
 /** Returns the next milestone above the given streak, or null if at/beyond max. */
 export function getNextMilestone(streak: number): { day: number; daysLeft: number; bonus: number } | null {
   const next = MILESTONES.find(m => m > streak)
