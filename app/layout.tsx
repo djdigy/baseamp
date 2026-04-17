@@ -12,9 +12,15 @@ export const metadata: Metadata = {
   },
 }
 
+// Runs before paint to prevent flash
+const themeScript = `(function(){try{var t=localStorage.getItem('ba_theme');if(t==='light')document.documentElement.classList.add('light')}catch(e){}})()`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <Providers>
           {children}

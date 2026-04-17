@@ -2,10 +2,10 @@
 
 import { Sidebar } from './Sidebar'
 import { ConnectWallet } from './ConnectWallet'
+import { ThemeToggle } from './ThemeToggle'
 import { useReferral } from '@/hooks/useReferral'
 
 export function AppLayout({ children, title }: { children: React.ReactNode, title: string }) {
-  // Referral hook - URL'den ref parametresini okur
   useReferral()
 
   return (
@@ -19,10 +19,11 @@ export function AppLayout({ children, title }: { children: React.ReactNode, titl
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)' }}>{title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ThemeToggle />
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
-              background: '#1a1d27', border: '1px solid #2563eb22',
+              background: 'var(--bg-card)', border: '1px solid #2563eb22',
               borderRadius: '99px', padding: '5px 12px',
               fontSize: '12px', color: '#60a5fa',
             }}>
