@@ -95,6 +95,32 @@ const SECONDARY_ACTIONS = [
 ]
 
 // ── Page ─────────────────────────────────────────────────────────────────────
+// ── Inline share hook ───────────────────────────────────────────────────────
+function ShareStreak({ streak }: { streak: number }) {
+  const [copied, setCopied] = useState(false)
+  const milestone = nextMilestone(streak)
+  const targetDay = milestone?.day ?? 7
+
+  function handleShare() {
+    const text = `🔥 I'm on a ${streak}-day streak on BaseAmp\nTrying to hit Day ${targetDay} bonus 🚀\nJoin me: baseamp.vercel.app`
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2200)
+    }).catch(() => {})
+  }
+
+  return (
+    <button onClick={handleShare} style={{
+      background: 'none', border: 'none', padding: '0 0 8px',
+      fontSize: '12px', color: copied ? '#4ade80' : '#4ade8055',
+      cursor: 'pointer', textAlign: 'left', display: 'block',
+      transition: 'color 0.2s',
+    }}>
+      {copied ? '✓ Copied!' : 'Share your streak →'}
+    </button>
+  )
+}
+
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const [stats, setStats] = useState<WalletStats | null>(null)
@@ -191,6 +217,7 @@ export default function DashboardPage() {
               <div style={{ fontSize: '13px', color: '#86efaccc', marginBottom: '6px', fontWeight: '500' }}>
                 🎉 Nice — you showed up today
               </div>
+              <ShareStreak streak={streak} />
               <div style={{ fontSize: '18px', fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}>
                 {t.streakSecured}
               </div>
