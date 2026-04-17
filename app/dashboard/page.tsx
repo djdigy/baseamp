@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-import { MILESTONES, MILESTONE_BONUS } from '@/lib/constants'
+import { getNextMilestone } from '@/lib/gm'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface WalletStats { txCount: number; activeDays: number; builderScore: number; firstTx: string | null }
@@ -91,11 +91,7 @@ const T = {
 } as const
 type Lang = keyof typeof T
 
-function nextMilestone(streak: number) {
-  const next = MILESTONES.find(m => m > streak)
-  if (!next) return null
-  return { day: next, daysLeft: next - streak, bonus: MILESTONE_BONUS[next] }
-}
+
 
 // ── StatCard ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: string }) {
@@ -129,7 +125,7 @@ function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 // ── ShareStreak ──────────────────────────────────────────────────────────────
 function ShareStreak({ streak, t }: { streak: number; t: typeof T['en'] }) {
   const [copied, setCopied] = useState(false)
-  const milestone = nextMilestone(streak)
+  const milestone = getNextMilestone(streak)
   const targetDay = milestone?.day ?? 7
 
   function handleShare() {
@@ -230,7 +226,7 @@ export default function DashboardPage() {
   // ── Derived state ─────────────────────────────────────────────────────────
   const gmmedToday   = gmStatus?.gmmedToday ?? false
   const streak       = gmStatus?.streak ?? 0
-  const milestone    = nextMilestone(streak)
+  const milestone    = getNextMilestone(streak)
   const hasReferrals = (referralStatus?.totalReferrals ?? 0) > 0
   const dailyRefScore = referralStatus?.dailyEarnings ?? 0
   const totalScore   = gmStatus?.score ?? 0

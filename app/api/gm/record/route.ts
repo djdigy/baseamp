@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/redis'
-import { MILESTONE_BONUS } from '@/lib/constants'
+import { calculateGM } from '@/lib/gm'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,8 +12,6 @@ interface ReferralData {
   lastEarningDate: string
 }
 
-const FIRST_GM_SCORE = 5
-const EXTRA_GM_SCORE = 1
 const REFERRAL_GM_BONUS = 2
 
 export async function POST(req: NextRequest) {
@@ -25,20 +23,25 @@ export async function POST(req: NextRequest) {
 
   const existing = await redis.get<GmData>(`gm:${address}`) ?? { streak: 0, lastDate: '', totalGms: 0, score: 0 }
 
-  const isFirstToday = existing.lastDate !== today
+  const calc = calculateGM({
+    isFirstToday: existing.lastDate !== today,
+    currentStreak: existing.streak,
+    lastDateWasYesterday: existing.lastDate === yesterday,
+  })
 
-  if (isFirstToday) {
-    // First GM of the day: advance streak, award +5 + milestone bonus
-    const newStreak = existing.lastDate === yesterday ? existing.streak + 1 : 1
-    const milestoneBonus = MILESTONE_BONUS[newStreak] ?? 0
-    const earned = FIRST_GM_SCORE + milestoneBonus
-    const newScore = (existing.score ?? 0) + earned
-    const newTotalGms = (existing.totalGms ?? 0) + 1
+  const newScore = (existing.score ?? 0) + calc.scoreEarned
+  const newTotalGms = (existing.totalGms ?? 0) + 1
 
-    await redis.set(`gm:${address}`, { streak: newStreak, lastDate: today, totalGms: newTotalGms, score: newScore })
+  await redis.set(`gm:${address}`, {
+    streak: calc.newStreak,
+    lastDate: calc.isFirstToday ? today : existing.lastDate,
+    totalGms: newTotalGms,
+    score: newScore,
+  })
 
-    // Reward referrer
-    let referralBonus = 0
+  // Reward referrer (first GM of day only)
+  let referralBonus = 0
+  if (calc.isFirstToday) {
     const referrerAddr = await redis.get<string>(`referred_by:${address}`)
     if (referrerAddr) {
       const refData = await redis.get<ReferralData>(`referral:${referrerAddr}`) ?? { referrals: [], totalEarned: 0, dailyEarnings: 0, lastEarningDate: '' }
@@ -57,34 +60,22 @@ export async function POST(req: NextRequest) {
       referralBonus = REFERRAL_GM_BONUS
     }
 
-    // Update leaderboard
-    await redis.zadd('leaderboard', newScore, address)
-
     // Activity feed
     const feed = await redis.get<Array<{ address: string; streak: number; time: number }>>('gm:feed') ?? []
-    feed.unshift({ address: address.slice(0, 6) + '...' + address.slice(-4), streak: newStreak, time: Date.now() })
+    feed.unshift({ address: address.slice(0, 6) + '...' + address.slice(-4), streak: calc.newStreak, time: Date.now() })
     await redis.set('gm:feed', feed.slice(0, 10))
-
-    return NextResponse.json({
-      streak: newStreak, gmmedToday: true, lastGm: today,
-      score: newScore, earned, referralBonus, isFirstToday: true,
-      milestone: milestoneBonus > 0 ? { day: newStreak, bonus: milestoneBonus } : null,
-    })
-  } else {
-    // Additional GM same day: +1 score only, streak unchanged
-    const earned = EXTRA_GM_SCORE
-    const newScore = (existing.score ?? 0) + earned
-    const newTotalGms = (existing.totalGms ?? 0) + 1
-
-    await redis.set(`gm:${address}`, { ...existing, totalGms: newTotalGms, score: newScore })
-
-    // Update leaderboard with new score
-    await redis.zadd('leaderboard', newScore, address)
-
-    return NextResponse.json({
-      streak: existing.streak, gmmedToday: true, lastGm: today,
-      score: newScore, earned, referralBonus: 0, isFirstToday: false,
-      milestone: null,
-    })
   }
+
+  await redis.zadd('leaderboard', newScore, address)
+
+  return NextResponse.json({
+    streak: calc.newStreak,
+    gmmedToday: true,
+    lastGm: today,
+    score: newScore,
+    earned: calc.scoreEarned,
+    referralBonus,
+    isFirstToday: calc.isFirstToday,
+    milestone: calc.milestoneBonus > 0 ? { day: calc.newStreak, bonus: calc.milestoneBonus } : null,
+  })
 }

@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { toHex } from 'viem'
 import { base } from 'wagmi/chains'
 import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, MILESTONES, MILESTONE_BONUS } from '@/lib/constants'
+import { getNextMilestone } from '@/lib/gm'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 interface GmData { streak: number; gmmedToday: boolean; score: number; totalGms: number; lastGm: string | null }
@@ -169,7 +170,7 @@ export default function GmPage() {
   }
 
   const userRank = leaderboard.find(e => e.address === address?.toLowerCase())
-  const nextMilestone = MILESTONES.find(m => m > data.streak)
+  const nextMilestoneData = getNextMilestone(data.streak)
 
   if (!isConnected) {
     return (
@@ -265,9 +266,9 @@ export default function GmPage() {
                 {data.gmmedToday ? '✅' : isUrgent ? '⏳' : data.streak >= 30 ? '👑' : data.streak >= 7 ? '🔥' : data.streak >= 3 ? '⚡' : '☀'}
               </div>
             </div>
-            {nextMilestone && !data.gmmedToday && (
+            {nextMilestoneData && !data.gmmedToday && (
               <div style={{ marginTop: '10px', fontSize: '11px', color: '#78350f' }}>
-                {nextMilestone - data.streak} day{nextMilestone - data.streak !== 1 ? 's' : ''} to Day {nextMilestone} — +{MILESTONE_BONUS[nextMilestone]} bonus
+                {nextMilestoneData.daysLeft} day{nextMilestoneData.daysLeft !== 1 ? 's' : ''} to Day {nextMilestoneData.day} — +{nextMilestoneData.bonus} bonus
               </div>
             )}
           </div>
