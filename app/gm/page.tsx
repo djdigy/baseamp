@@ -245,7 +245,7 @@ export default function GmPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e' }}>
-                  {data.gmmedToday ? '✅ You're active today' : '🔥 Daily GM'}
+                  {data.gmmedToday ? "✅ You're active today" : '🔥 Daily GM'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
                   <div>
