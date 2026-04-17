@@ -18,6 +18,11 @@ interface GmStatus {
   score: number
 }
 
+interface ReferralStatus {
+  totalReferrals: number
+  dailyEarnings: number
+}
+
 // ── Translations ────────────────────────────────────────────────────────────
 const T = {
   en: {
@@ -94,6 +99,7 @@ export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const [stats, setStats] = useState<WalletStats | null>(null)
   const [gmStatus, setGmStatus] = useState<GmStatus | null>(null)
+  const [referralStatus, setReferralStatus] = useState<ReferralStatus | null>(null)
   const [loading, setLoading] = useState(false)
   const [lang, setLang] = useState<Lang>('en')
 
@@ -110,8 +116,13 @@ export default function DashboardPage() {
     Promise.all([
       fetch(`/api/wallet-stats?address=${address}`).then(r => r.json()),
       fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
+      fetch(`/api/referral/stats?address=${address}`).then(r => r.json()).catch(() => null),
     ])
-      .then(([walletData, gmData]) => { setStats(walletData); setGmStatus(gmData) })
+      .then(([walletData, gmData, refData]) => {
+        setStats(walletData)
+        setGmStatus(gmData)
+        if (refData) setReferralStatus(refData)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [address])
@@ -153,6 +164,8 @@ export default function DashboardPage() {
   const gmmedToday = gmStatus?.gmmedToday ?? false
   const streak     = gmStatus?.streak ?? 0
   const milestone  = nextMilestone(streak)
+  const hasReferrals = (referralStatus?.totalReferrals ?? 0) > 0
+  const dailyRefScore = referralStatus?.dailyEarnings ?? 0
 
   return (
     <AppLayout title="Dashboard">
@@ -178,9 +191,23 @@ export default function DashboardPage() {
               <div style={{ fontSize: '18px', fontWeight: '700', color: '#f1f5f9', marginBottom: '4px' }}>
                 {t.streakSecured}
               </div>
+              <div style={{ fontSize: '12px', color: '#4ade80bb', marginBottom: '4px' }}>
+                +5 score added
+              </div>
               <div style={{ fontSize: '13px', color: '#4ade8099' }}>
                 {t.comeBack} → Day {streak + 1}
               </div>
+              {hasReferrals ? (
+                <div style={{ fontSize: '11px', color: '#2dd4bf99', marginTop: '6px' }}>
+                  +{dailyRefScore > 0 ? `${dailyRefScore.toFixed(4)}` : '—'} score from referrals today
+                </div>
+              ) : (
+                <Link href="/referral" style={{ textDecoration: 'none' }}>
+                  <div style={{ fontSize: '11px', color: '#2dd4bf66', marginTop: '6px' }}>
+                    Invite friends → earn extra score daily
+                  </div>
+                </Link>
+              )}
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: '28px', fontWeight: '800', color: '#4ade80', lineHeight: 1 }}>{streak}</div>
@@ -202,6 +229,9 @@ export default function DashboardPage() {
             </div>
             {streak > 0 ? (
               <>
+                <div style={{ fontSize: '13px', color: '#f97316cc', marginBottom: '4px', fontWeight: '600' }}>
+                  🔥 You're on a streak
+                </div>
                 <div style={{ fontSize: '20px', fontWeight: '800', color: '#f1f5f9', marginBottom: '6px' }}>
                   Day {streak} streak
                 </div>
@@ -211,18 +241,26 @@ export default function DashboardPage() {
                 <div style={{ fontSize: '12px', color: '#60a5fa66', marginBottom: '3px' }}>
                   +5 score when you continue
                 </div>
-                {milestone && milestone.daysLeft <= 3 && (
+                {milestone && (
                   <div style={{ fontSize: '12px', color: '#fbbf24aa', marginBottom: '3px' }}>
-                    {milestone.daysLeft === 1 ? '1 day' : `${milestone.daysLeft} days`} to Day {milestone.day} → +{milestone.bonus} bonus
+                    {milestone.daysLeft <= 3
+                      ? `${milestone.daysLeft === 1 ? '1 day' : `${milestone.daysLeft} days`} to Day ${milestone.day} → +${milestone.bonus} bonus`
+                      : `Keep going to reach Day ${milestone.day} → +${milestone.bonus} bonus`
+                    }
                   </div>
                 )}
-                <div style={{ fontSize: '11px', color: '#ef444466', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#ef444466', marginBottom: '12px' }}>
                   {t.skipWarning}
                 </div>
+                <Link href="/referral" style={{ textDecoration: 'none', display: 'block', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '11px', color: '#2dd4bf99' }}>
+                    Invite friends → earn extra score daily
+                  </div>
+                </Link>
               </>
             ) : (
               <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px' }}>
-                Start your streak — earn +5 score every day you show up
+                Start your streak today — Day 1 begins here
               </div>
             )}
             <Link href="/gm" style={{ textDecoration: 'none' }}>
