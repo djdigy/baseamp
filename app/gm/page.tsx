@@ -3,9 +3,9 @@
 import { AppLayout } from '@/components/AppLayout'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
-import { toHex } from 'viem'
+
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 import { useLang } from '@/components/Providers'
@@ -142,7 +142,7 @@ export default function GmPage() {
       const hash = await sendTransactionAsync({
         to: OWNER_ADDRESS,
         value: fee,
-        data: toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`,
+        data: encodeBuilderCode(BUILDER_CODE),
         chainId: base.id,
       })
       await publicClient.waitForTransactionReceipt({ hash })
@@ -391,7 +391,7 @@ export default function GmPage() {
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
               const primary = isMe
-                ? (entry.rank === 1 ? "You're #1" : 'You')
+                ? (entry.rank === 1 ? `${tx(g.youRank, lang)}1)` : `${tx(g.youRank, lang)}${entry.rank})`)
                 : (entry.code ?? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`)
               const secondary = !isMe && entry.code ? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}` : null
               return (

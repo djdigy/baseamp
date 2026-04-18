@@ -5,9 +5,9 @@ import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
-import { toHex, encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
+import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { OWNER_ADDRESS, BUILDER_CODE, DEPLOY_FEE } from '@/lib/constants'
+import { OWNER_ADDRESS, BUILDER_CODE, DEPLOY_FEE, encodeBuilderCode } from '@/lib/constants'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
 
 // ─── Contract types ───────────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ export default function DeployPage() {
       const feeHash = await sendTransactionAsync({
         to: OWNER_ADDRESS,
         value: fee,
-        data: toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`,
+        data: encodeBuilderCode(BUILDER_CODE),
         chainId: base.id,
       })
       await publicClient.waitForTransactionReceipt({ hash: feeHash })
@@ -182,7 +182,7 @@ export default function DeployPage() {
       setStatus('deploying')
 
       const { bytecode, args } = selected.encode(fieldValues)
-      const builderSuffix = toHex(new TextEncoder().encode(BUILDER_CODE)) as `0x${string}`
+      const builderSuffix = encodeBuilderCode(BUILDER_CODE)
       const deployData = args === '0x'
         ? concat([bytecode, builderSuffix]) as `0x${string}`
         : concat([bytecode, args, builderSuffix]) as `0x${string}`

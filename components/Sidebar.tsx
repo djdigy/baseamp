@@ -10,7 +10,6 @@ const NAV = [
   { href: '/swap',      label: 'Swap',      icon: '\u{1F501}', group: 'Main' },
   { href: '/deploy',    label: 'Deploy',    icon: '\u{1F680}', group: 'Tools' },
   { href: '/gm',        label: 'GM',        icon: '\u2600',    group: 'Tools' },
-  { href: '/referral',  label: 'Referral',  icon: '\u{1F465}', group: 'Tools' },
 ]
 
 export function Sidebar() {
