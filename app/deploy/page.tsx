@@ -1,7 +1,8 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { PageInfo } from '@/components/PageInfo'
+import { useLang } from '@/components/Providers'
+import { TEXT, tx } from '@/lib/i18n'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { toHex, encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
@@ -135,6 +136,8 @@ function InputField({ label, value, onChange, placeholder, type = 'text' }: {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function DeployPage() {
+  const { lang } = useLang()
+  const d = TEXT.deploy
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
@@ -220,10 +223,9 @@ export default function DeployPage() {
   return (
     <AppLayout title="Deploy Contract">
       <div style={{ maxWidth: '640px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <PageInfo
-          en={"Even a simple contract deploy counts as real on-chain usage. Fill in the details and deploy directly on Base."}
-          tr={"Basit bir kontrat deploy etmek bile ağ üzerinde gerçek kullanım olarak görülür. Bilgileri doldurup Base üzerinde yayınlarsın."}
-        />
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+          {tx(d.pageInfo, lang)}
+        </div>
 
         {/* Contract type grid */}
         <div>
@@ -287,7 +289,7 @@ export default function DeployPage() {
           {/* Status */}
           {busy && (
             <div style={{ background: 'var(--bg-card2)', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#60a5fa' }}>
-              {status === 'fee' ? 'Preparing deployment...' : 'Deploying to Base...'}
+              {status === 'fee' ? tx(d.preparing, lang) : tx(d.deploying, lang)}
             </div>
           )}
           {status === 'error' && error && (
@@ -326,9 +328,9 @@ export default function DeployPage() {
               cursor: busy || !canDeploy ? 'not-allowed' : 'pointer',
             }}
           >
-            {status === 'fee' ? 'Preparing...' :
-             status === 'deploying' ? 'Deploying...' :
-             `Deploy ${selected.title}`}
+            {status === 'fee' ? tx(d.preparingBtn, lang) :
+             status === 'deploying' ? tx(d.deployingBtn, lang) :
+             lang === 'tr' ? d.deployBtn(selected.title).tr : d.deployBtn(selected.title).en}
           </button>
         </div>
 

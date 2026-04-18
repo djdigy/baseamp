@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/AppLayout'
 import { useAccount } from 'wagmi'
 import { useState, useEffect } from 'react'
 import { useLang } from '@/components/Providers'
+import { TEXT, tx } from '@/lib/i18n'
 
 interface ReferralStats {
   code: string
@@ -46,11 +47,8 @@ export default function ReferralPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const labels = {
-    en: { referrals: 'Referrals', earned: 'Earned (ETH)', todayScore: 'Today Score', commission: 'Commission', yourLink: 'Your Referral Link', copy: 'Copy', share: 'Share', yourReferrals: 'Your Referrals', noReferrals: 'No referrals yet', noReferralsSub: 'Share your link to get started', copied: 'Copied!' },
-    tr: { referrals: 'Referanslar', earned: 'Kazanılan (ETH)', todayScore: 'Bugün Puan', commission: 'Komisyon', yourLink: 'Referral Linkin', copy: 'Kopyala', share: 'Paylaş', yourReferrals: 'Referansların', noReferrals: 'Henüz referans yok', noReferralsSub: 'Linkinizi paylaşarak başlayın', copied: 'Kopyalandı!' },
-  }
-  const l = labels[lang as 'en' | 'tr'] ?? labels.en
+  const r = TEXT.referral
+  const cm = TEXT.common
 
   if (!isConnected) {
     return (
@@ -71,10 +69,10 @@ export default function ReferralPage() {
         {stats && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px' }}>
             {[
-              { label: l.referrals,   value: stats.totalReferrals.toString(), color: '#60a5fa' },
-              { label: l.earned,      value: stats.totalEarned,               color: '#22c55e' },
-              { label: l.todayScore,  value: stats.dailyEarnings > 0 ? `+${stats.dailyEarnings}` : '0', color: '#f97316' },
-              { label: l.commission,  value: '10%',                           color: '#8b5cf6' },
+              { label: tx(r.referrals, lang),   value: stats.totalReferrals.toString(), color: '#60a5fa' },
+              { label: tx(r.earned, lang),      value: stats.totalEarned,               color: '#22c55e' },
+              { label: tx(r.todayScore, lang),  value: stats.dailyEarnings > 0 ? `+${stats.dailyEarnings}` : '0', color: '#f97316' },
+              { label: tx(r.commission, lang),  value: '10%',                           color: '#8b5cf6' },
             ].map((item, i) => (
               <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
                 <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '5px' }}>{item.label}</div>
@@ -87,7 +85,7 @@ export default function ReferralPage() {
         {/* Referral link */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
-            {l.yourLink}
+            {tx(r.yourLink, lang)}
           </div>
           {loading ? (
             <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
@@ -106,17 +104,17 @@ export default function ReferralPage() {
                   onClick={copyLink}
                   style={{
                     flex: 1, padding: '9px',
-                    background: copied ? '#052e16' : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                    border: copied ? '1px solid #16a34a' : 'none',
+                    background: copied ? 'var(--bg-card2)' : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                    border: copied ? '1px solid #16a34a' : '1px solid transparent',
                     borderRadius: '8px', fontSize: '13px', fontWeight: '600',
                     color: copied ? '#4ade80' : 'white', cursor: 'pointer',
                   }}
                 >
-                  {copied ? l.copied : l.copy}
+                  {copied ? tx(cm.copied, lang) : tx(r.copy, lang)}
                 </button>
                 <button
                   onClick={() => {
-                    const text = `Join me on BaseAmp!\n\nSend daily GM & earn score\n20% fee discount with my code\n\n${stats.referralLink}`
+                    const text = r.shareText(stats.referralLink)
                     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
                   }}
                   style={{
@@ -125,7 +123,7 @@ export default function ReferralPage() {
                     fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', cursor: 'pointer',
                   }}
                 >
-                  {l.share}
+                  {tx(r.share, lang)}
                 </button>
               </div>
             </>
@@ -136,7 +134,7 @@ export default function ReferralPage() {
         {stats && stats.referrals.length > 0 ? (
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
-              {l.yourReferrals}
+              {tx(r.yourReferrals, lang)}
             </div>
             {stats.referrals.map((ref, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: i < stats.referrals.length - 1 ? '1px solid var(--border)' : 'none' }}>
@@ -152,8 +150,8 @@ export default function ReferralPage() {
           </div>
         ) : stats ? (
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{l.noReferrals}</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '4px' }}>{l.noReferralsSub}</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{tx(r.noReferrals, lang)}</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '4px' }}>{tx(r.noReferralsSub, lang)}</div>
           </div>
         ) : null}
 

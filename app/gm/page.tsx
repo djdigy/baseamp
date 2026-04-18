@@ -1,7 +1,6 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { PageInfo } from '@/components/PageInfo'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 import { toHex } from 'viem'
@@ -9,6 +8,8 @@ import { base } from 'wagmi/chains'
 import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useReferral, calculateFee } from '@/hooks/useReferral'
+import { useLang } from '@/components/Providers'
+import { TEXT, tx } from '@/lib/i18n'
 
 interface GmData {
   streak: number
@@ -83,6 +84,9 @@ export default function GmPage() {
   const { sendTransactionAsync } = useSendTransaction()
   const { referrer } = useReferral()
   const countdown = useCountdown()
+  const { lang } = useLang()
+  const g = TEXT.gm
+  const c = TEXT.common
 
   const [data, setData] = useState<GmData>({ streak: 0, gmmedToday: false, score: 0, totalGms: 0, lastGm: null })
   const [feed, setFeed] = useState<FeedItem[]>([])
@@ -178,24 +182,24 @@ export default function GmPage() {
       <AppLayout title="GM">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <div style={{ fontSize: '48px' }}>&#9728;</div>
-          <div style={{ fontSize: '18px', fontWeight: '600' }}>Connect your wallet</div>
-          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Send daily GM and earn score</div>
+          <div style={{ fontSize: '18px', fontWeight: '600' }}>{tx(TEXT.common.connectWallet, lang)}</div>
+          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{tx(g.connectSub, lang)}</div>
         </div>
       </AppLayout>
     )
   }
 
   const btnLabel = status === 'sending'
-    ? 'Sending...'
+    ? tx(g.sendingBtn, lang)
     : isUrgent && !data.gmmedToday
-      ? 'Send GM now — streak at risk!'
+      ? tx(g.urgentBtn, lang)
       : data.gmmedToday
-        ? 'Send another GM (+1 score)'
-        : 'Send GM — earn +5 score'
+        ? tx(g.sendAgainBtn, lang)
+        : tx(g.sendBtn, lang)
 
   const btnHint = data.gmmedToday
-    ? "You're active today — keep going (+1 per GM)"
-    : 'Unlimited GM — only your first one counts for streak'
+    ? tx(g.hintAgain, lang)
+    : tx(g.hintFirst, lang)
 
   const streakIcon = data.gmmedToday ? '\u2705'
     : isUrgent ? '\u23F3'
@@ -207,10 +211,9 @@ export default function GmPage() {
   return (
     <AppLayout title="GM">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
-        <PageInfo
-          en={'Sending GM looks simple, but it helps you generate consistent daily transactions. Spreading activity over time matters more than doing everything in one day.'}
-          tr={'GM göndermek basit görünür ama aslında her gün TX yapmanı sağlar. Her şeyi tek günde yapmak yerine zamana yaymak daha önemlidir.'}
-        />
+        <div style={{ gridColumn: '1 / -1', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+          {tx(g.pageInfo, lang)}
+        </div>
 
         {/* Left column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -220,8 +223,8 @@ export default function GmPage() {
             <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '20px' }}>\uD83D\uDC94</span>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>Streak lost. Start again</div>
-                <div style={{ fontSize: '11px', color: '#7f1d1d', marginTop: '2px' }}>Send GM today to begin a new streak</div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>{tx(g.streakLost, lang)}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tx(g.streakLostSub, lang)}</div>
               </div>
             </div>
           )}
@@ -229,7 +232,7 @@ export default function GmPage() {
           {/* Urgency warning */}
           {!data.gmmedToday && data.streak > 0 && !streakLost && (
             <div style={{
-              background: isUrgent ? '#1a0d00' : '#1a1208',
+              background: 'var(--bg-card)',
               border: `1px solid ${isUrgent ? '#ea580c' : '#78350f'}`,
               borderRadius: '10px', padding: '12px 16px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -237,7 +240,7 @@ export default function GmPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '18px' }}>{isUrgent ? '\uD83D\uDEA8' : '\u26A0\uFE0F'}</span>
                 <div style={{ fontSize: '13px', fontWeight: '600', color: isUrgent ? '#f97316' : '#fbbf24' }}>
-                  Send GM today or lose your {data.streak}-day streak
+                  {tx(g.streakWarning, lang)} {data.streak}{tx(g.streakDays, lang)}
                 </div>
               </div>
               <div style={{
@@ -274,28 +277,28 @@ export default function GmPage() {
                   letterSpacing: '0.08em', marginBottom: '8px',
                   color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e',
                 }}>
-                  {data.gmmedToday ? 'GM Sent Today!' : 'Daily GM'}
+                  {data.gmmedToday ? tx(g.activeToday, lang) : 'GM'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
                   <div>
                     <div style={{ fontSize: '44px', fontWeight: '900', lineHeight: 1, color: urgencyColor, transition: 'color 0.5s' }}>
                       {loading ? '...' : data.streak}
                     </div>
-                    <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : '#78350f' }}>day streak</div>
+                    <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : 'var(--text-muted)' }}>{tx(c.dayStreak, lang)}</div>
                   </div>
                   <div style={{ width: '1px', height: '44px', background: 'var(--border)' }} />
                   <div>
                     <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>
                       {loading ? '...' : data.score}
                     </div>
-                    <div style={{ fontSize: '11px', marginTop: '2px', color: '#78350f' }}>score</div>
+                    <div style={{ fontSize: '11px', marginTop: '2px', color: 'var(--text-muted)' }}>score</div>
                   </div>
                 </div>
               </div>
               <div style={{ fontSize: '40px' }}>{streakIcon}</div>
             </div>
             {nextMilestoneData && !data.gmmedToday && (
-              <div style={{ marginTop: '10px', fontSize: '11px', color: '#78350f' }}>
+              <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
                 {nextMilestoneData.daysLeft} day{nextMilestoneData.daysLeft !== 1 ? 's' : ''} to Day {nextMilestoneData.day} — +{nextMilestoneData.bonus} bonus
               </div>
             )}
@@ -303,17 +306,17 @@ export default function GmPage() {
 
           {/* Milestones */}
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>Milestones</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>{tx(g.milestones, lang)}</div>
             <MilestoneBar streak={data.streak} />
           </div>
 
           {/* Earned message */}
           {status === 'success' && earnedMsg && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid #16a34a55', borderRadius: '10px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>GM sent +{earnedMsg.score} score</div>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>{tx(g.gmSent, lang)} +{earnedMsg.score}</div>
               {earnedMsg.milestone && (
                 <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
-                  Day {earnedMsg.milestone.day} milestone! +{earnedMsg.milestone.bonus} bonus
+                  Day {earnedMsg.milestone.day} {tx(g.milestone, lang)} +{earnedMsg.milestone.bonus} {tx(g.bonusLabel, lang)}
                 </div>
               )}
             </div>
@@ -334,7 +337,7 @@ export default function GmPage() {
               style={{
                 width: '100%', padding: '16px',
                 background: status === 'sending'
-                  ? '#1a1d27'
+                  ? 'var(--bg-card2)'
                   : isUrgent && !data.gmmedToday
                     ? 'linear-gradient(135deg, #dc2626, #ea580c)'
                     : 'linear-gradient(135deg, #f97316, #ea580c)',
@@ -356,17 +359,17 @@ export default function GmPage() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Total GMs</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.totalGms, lang)}</div>
               <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{data.totalGms}</div>
             </div>
             {userRank ? (
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Your Rank</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.yourRank, lang)}</div>
                 <div style={{ fontSize: '20px', fontWeight: '700', color: '#fbbf24' }}>#{userRank.rank}</div>
               </div>
             ) : (
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Resets in</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.resetsIn, lang)}</div>
                 <div style={{ fontSize: '16px', fontWeight: '700', color: urgencyColor, fontFamily: 'monospace' }}>
                   {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
                 </div>
@@ -381,10 +384,10 @@ export default function GmPage() {
           {/* Leaderboard */}
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-              Leaderboard
+              {tx(g.leaderboard, lang)}
             </div>
             {leaderboard.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>No scores yet — be first!</div>
+              <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>{tx(g.noScores, lang)}</div>
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
               const primary = isMe
@@ -419,10 +422,10 @@ export default function GmPage() {
           {feed.length > 0 && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                Recent GMs
+                {tx(g.recentGMs, lang)}
               </div>
               {feed.slice(0, 5).map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid #1a1d2744' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid var(--border)' : 'none' }}>
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{item.address}</div>
                   <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `${item.streak}d` : 'GM'}</div>
                 </div>

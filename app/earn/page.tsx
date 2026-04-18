@@ -1,8 +1,9 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { PageInfo } from '@/components/PageInfo'
 import { useEffect, useState } from 'react'
+import { useLang } from '@/components/Providers'
+import { TEXT, tx } from '@/lib/i18n'
 
 interface Vault {
   protocol: 'Morpho' | 'Aave'
@@ -58,7 +59,7 @@ function VaultRow({ vault }: { vault: Vault }) {
     <a href={vault.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
       <div
         style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
-        onMouseEnter={e => (e.currentTarget.style.background = '#1a1d2744')}
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-card2)')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         <div style={{ width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0, background: pc + '22', border: `1px solid ${pc}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '800', color: pc }}>
@@ -70,8 +71,8 @@ function VaultRow({ vault }: { vault: Vault }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
             <AssetBadge symbol={vault.asset} />
-            {vault.isBtc && <span style={{ fontSize: '9px', background: '#27200a', color: '#f59e0b', border: '1px solid #78350f', padding: '2px 6px', borderRadius: '99px', fontWeight: '700' }}>₿ BTC</span>}
-            {vault.isV2 && <span style={{ fontSize: '9px', background: '#172554', color: '#60a5fa', border: '1px solid #1e3a5f', padding: '2px 6px', borderRadius: '99px' }}>V2</span>}
+            {vault.isBtc && <span style={{ fontSize: '9px', background: 'var(--bg-card2)', color: '#f59e0b', border: '1px solid #f59e0b44', padding: '2px 6px', borderRadius: '99px', fontWeight: '700' }}>\u20BF BTC</span>}
+            {vault.isV2 && <span style={{ fontSize: '9px', background: 'var(--bg-card2)', color: '#60a5fa', border: '1px solid #60a5fa44', padding: '2px 6px', borderRadius: '99px' }}>V2</span>}
             <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>{vault.protocol} · Base</span>
           </div>
         </div>
@@ -91,13 +92,15 @@ function VaultRow({ vault }: { vault: Vault }) {
 
 function FilterButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{ padding: '6px 14px', background: active ? '#1e2235' : 'transparent', border: `1px solid ${active ? '#3b82f6' : '#1a1d27'}`, borderRadius: '8px', fontSize: '12px', fontWeight: active ? '600' : '400', color: active ? '#60a5fa' : '#64748b', cursor: 'pointer' }}>
+    <button onClick={onClick} style={{ padding: '6px 14px', background: active ? 'var(--bg-card2)' : 'transparent', border: `1px solid ${active ? '#3b82f6' : 'var(--border)'}`, borderRadius: '8px', fontSize: '12px', fontWeight: active ? '600' : '400', color: active ? '#60a5fa' : 'var(--text-muted)', cursor: 'pointer' }}>
       {children}
     </button>
   )
 }
 
 export default function EarnPage() {
+  const { lang } = useLang()
+  const e = TEXT.earn
   const [vaults, setVaults] = useState<Vault[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'btc' | 'stable' | 'morpho' | 'aave'>('all')
@@ -167,10 +170,9 @@ export default function EarnPage() {
   return (
     <AppLayout title="Earn">
       <div style={{ maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <PageInfo
-          en={"Idle tokens can work for you here. Starting small and staying consistent shows more genuine usage than one-time activity."}
-          tr={"Boş duran token'ları burada değerlendirebilirsin. Küçük başlayıp zamanla devam etmek daha doğal kullanım gösterir."}
-        />
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+          {tx(e.pageInfo, lang)}
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           {[
             { label: 'Best APY', value: loading ? '...' : `${bestApy}%`, color: '#22c55e' },

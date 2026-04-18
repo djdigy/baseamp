@@ -1,7 +1,8 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { PageInfo } from '@/components/PageInfo'
+import { useLang } from '@/components/Providers'
+import { TEXT, tx } from '@/lib/i18n'
 
 interface Dex {
   name: string
@@ -37,14 +38,23 @@ const DEXES: Dex[] = [
   { name: 'Fibrous', url: 'https://fibrous.finance', desc: 'Aggregator on Base', category: 'aggregator', logo: '🌐' },
 ]
 
-const CATEGORY_LABELS = {
-  aggregator: { label: 'Aggregators', desc: 'Scan multiple DEXs and give you the best price automatically.', color: '#8b5cf6' },
-  dex: { label: 'DEX', desc: 'Decentralized exchanges where trades happen on-chain using liquidity pools.', color: '#3b82f6' },
-  stable: { label: 'Stablecoin', desc: 'Optimized for stable-to-stable swaps with minimal slippage.', color: '#22c55e' },
+const CATEGORY_COLORS = {
+  aggregator: '#8b5cf6',
+  dex: '#3b82f6',
+  stable: '#22c55e',
+}
+
+function getCategoryLabels(lang: 'en' | 'tr') {
+  const s = TEXT.swap
+  return {
+    aggregator: { label: tx(s.aggregators, lang), desc: tx(s.aggregatorDesc, lang), color: CATEGORY_COLORS.aggregator },
+    dex:        { label: tx(s.dex, lang),         desc: tx(s.dexDesc, lang),        color: CATEGORY_COLORS.dex },
+    stable:     { label: tx(s.stable, lang),       desc: tx(s.stableDesc, lang),     color: CATEGORY_COLORS.stable },
+  }
 }
 
 function DexCard({ dex }: { dex: Dex }) {
-  const cat = CATEGORY_LABELS[dex.category]
+  const cat = { color: CATEGORY_COLORS[dex.category] }
   return (
     <a
       href={dex.url}
@@ -93,15 +103,17 @@ function DexCard({ dex }: { dex: Dex }) {
 }
 
 export default function SwapPage() {
+  const { lang } = useLang()
+  const s = TEXT.swap
   const categories = ['aggregator', 'dex', 'stable'] as const
+  const categoryLabels = getCategoryLabels(lang)
 
   return (
     <AppLayout title="Swap">
       <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <PageInfo
-          en={"Swapping tokens is active network usage. Trying different platforms creates a stronger signal than using only one."}
-          tr={"Token takası yaparak ağı aktif kullanırsın. Farklı platformları denemek gerçek kullanım sinyali oluşturur."}
-        />
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+          {tx(s.pageInfo, lang)}
+        </div>
 
         {/* Info banner */}
         <div style={{
@@ -109,22 +121,19 @@ export default function SwapPage() {
           border: '1px solid var(--border)',
           borderRadius: '12px',
           padding: '16px 20px',
-          display: 'flex', alignItems: 'center', gap: '14px',
         }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
-              Best Base DEXs &amp; Aggregators
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Click any platform to trade directly on Base. Aggregators find the best price across all pools.
-            </div>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
+            {tx(s.bannerTitle, lang)}
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            {tx(s.bannerSub, lang)}
           </div>
         </div>
 
         {/* DEX kategorileri */}
         {categories.map(cat => {
           const items = DEXES.filter(d => d.category === cat)
-          const info = CATEGORY_LABELS[cat]
+          const info = categoryLabels[cat]
           return (
             <div key={cat}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
@@ -138,7 +147,7 @@ export default function SwapPage() {
                   background: 'var(--bg-card2)', color: 'var(--text-faint)',
                   padding: '2px 8px', borderRadius: '99px',
                 }}>
-                  {items.length} platforms
+                  {items.length} {tx(s.platforms, lang)}
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -149,7 +158,7 @@ export default function SwapPage() {
         })}
 
         <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'center', padding: '8px 0' }}>
-          All swaps happen directly on the respective platforms. BaseAmp does not take any swap fees.
+          
         </div>
       </div>
     </AppLayout>
