@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation'
 import { useAccount } from 'wagmi'
 
 const NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: '\u25c8', group: 'Main' },
+  { href: '/dashboard', label: 'Dashboard', icon: '◈', group: 'Main' },
   { href: '/earn',      label: 'Earn',      icon: '💰', group: 'Main', badge: 'NEW' },
   { href: '/swap',      label: 'Swap',      icon: '🔁', group: 'Main' },
   { href: '/deploy',    label: 'Deploy',    icon: '🚀', group: 'Tools' },
-  { href: '/gm',        label: 'GM',        icon: '\u2600',    group: 'Tools' },
+  { href: '/gm',        label: 'GM',        icon: '☀',    group: 'Tools' },
 ]
 
 export function Sidebar() {

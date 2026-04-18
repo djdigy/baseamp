@@ -54,7 +54,7 @@ const LOGBOOK_BYTECODE = '0x6080604052348015600e575f80fd5b5060e88061001b5f395ff3
 // ─── Contract definitions ─────────────────────────────────────────────────────
 const CONTRACTS: ContractDef[] = [
   {
-    id: 'ERC20', title: 'ERC20 Token', desc: 'Fungible token', icon: '\u25c8',
+    id: 'ERC20', title: 'ERC20 Token', desc: 'Fungible token', icon: '◈',
     fields: [
       { key: 'name', label: 'Token Name', placeholder: 'My Token' },
       { key: 'symbol', label: 'Symbol', placeholder: 'MTK' },
@@ -70,7 +70,7 @@ const CONTRACTS: ContractDef[] = [
     }),
   },
   {
-    id: 'ERC721', title: 'ERC721 NFT', desc: 'NFT collection', icon: '\u25c9',
+    id: 'ERC721', title: 'ERC721 NFT', desc: 'NFT collection', icon: '◉',
     fields: [
       { key: 'name', label: 'Collection Name', placeholder: 'My NFT' },
       { key: 'symbol', label: 'Symbol', placeholder: 'MNFT' },
@@ -81,7 +81,7 @@ const CONTRACTS: ContractDef[] = [
     }),
   },
   {
-    id: 'ERC1155', title: 'ERC1155', desc: 'Multi-token standard', icon: '\u25eb',
+    id: 'ERC1155', title: 'ERC1155', desc: 'Multi-token standard', icon: '◫',
     fields: [
       { key: 'name', label: 'Name', placeholder: 'My Collection' },
       { key: 'symbol', label: 'Symbol', placeholder: 'MC' },
@@ -92,12 +92,12 @@ const CONTRACTS: ContractDef[] = [
     }),
   },
   {
-    id: 'Counter', title: 'Counter', desc: 'On-chain click counter', icon: '[\u0023\u0023]',
+    id: 'Counter', title: 'Counter', desc: 'On-chain click counter', icon: '[##]',
     fields: [],
     encode: () => ({ bytecode: COUNTER_BYTECODE, args: '0x' }),
   },
   {
-    id: 'Greeter', title: 'Greeter', desc: 'Store a greeting on-chain', icon: '[\u003a\u0029]',
+    id: 'Greeter', title: 'Greeter', desc: 'Store a greeting on-chain', icon: '[:)]',
     fields: [
       { key: 'greeting', label: 'Greeting', placeholder: 'Hello, Base!' },
     ],
@@ -107,7 +107,7 @@ const CONTRACTS: ContractDef[] = [
     }),
   },
   {
-    id: 'Logbook', title: 'Logbook', desc: 'On-chain notes / log entries', icon: '[\u003e]',
+    id: 'Logbook', title: 'Logbook', desc: 'On-chain notes / log entries', icon: '[>]',
     fields: [],
     encode: () => ({ bytecode: LOGBOOK_BYTECODE, args: '0x' }),
   },
@@ -303,13 +303,13 @@ export default function DeployPage() {
               {contractAddr && (
                 <a href={`https://basescan.org/address/${contractAddr}`} target="_blank" rel="noopener noreferrer"
                   style={{ color: '#22c55e', textDecoration: 'none', fontFamily: 'monospace', fontSize: '11px' }}>
-                  {contractAddr.slice(0, 14)}...{contractAddr.slice(-8)} \u2197
+                  {contractAddr.slice(0, 14)}...{contractAddr.slice(-8)} ↗
                 </a>
               )}
               {txHash && (
                 <a href={`https://basescan.org/tx/${txHash}`} target="_blank" rel="noopener noreferrer"
                   style={{ color: '#16a34a', textDecoration: 'none', fontSize: '11px' }}>
-                  View on Basescan \u2192
+                  View on Basescan →
                 </a>
               )}
             </div>

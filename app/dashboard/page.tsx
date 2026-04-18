@@ -90,7 +90,7 @@ export default function DashboardPage() {
   }
 
   const V = (v: number | null | undefined) =>
-    loading ? '...' : v != null ? String(v) : '\u2014'
+    loading ? '...' : v != null ? String(v) : '—'
 
   const principles = [d.guidePrinciple1, d.guidePrinciple2, d.guidePrinciple3] as const
 
@@ -98,19 +98,16 @@ export default function DashboardPage() {
     <AppLayout title="Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* ── 1. AIRDROP GUIDE (always visible, full onboarding block) ── */}
+        {/* ── 1. AIRDROP GUIDE ─────────────────────────────────────────── */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px 22px' }}>
-
           <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '14px', letterSpacing: '-0.3px' }}>
             {tx(d.guideTitle, lang)}
           </div>
 
-          {/* Core message */}
           <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.8', marginBottom: '14px' }}>
             {tx(d.guideWhy, lang)}
           </div>
 
-          {/* Principles */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
             {principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
@@ -120,7 +117,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* External actions — core, not secondary */}
+          {/* External actions — INSIDE guide, core requirement */}
           <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
               {tx(d.guideExternalTitle, lang)}
@@ -131,7 +128,7 @@ export default function DashboardPage() {
                   style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', textDecoration: 'none' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-faint)', flexShrink: 0, marginTop: '2px' }}>{i + 1}.</span>
                   <span style={{ fontSize: '12px', color: '#60a5fa', lineHeight: '1.5' }}>
-                    {lang === 'tr' ? item.tr : item.en} \u2197
+                    {lang === 'tr' ? item.tr : item.en} &#8599;
                   </span>
                 </a>
               ))}
@@ -141,7 +138,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* CTA — transitions to steps */}
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
             {tx(d.guideCta, lang)}
           </div>
@@ -157,21 +153,34 @@ export default function DashboardPage() {
               const isDone = done[step.doneKey]
               const title  = lang === 'tr' ? step.tr_title : step.en_title
               const sub    = lang === 'tr' ? step.tr_sub   : step.en_sub
+              const cta    = lang === 'tr' ? step.tr_cta   : step.en_cta
+              const isStep2 = step.doneKey === 'swap'
+
               return (
-                <Link key={step.doneKey} href={step.href} style={{ textDecoration: 'none' }}>
-                  <div style={{
-                    background: 'var(--bg-card)',
-                    border: `1px solid ${isDone ? '#16a34a55' : 'var(--border)'}`,
-                    borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', height: '100%', position: 'relative',
-                  }}>
-                    {isDone && (
-                      <div style={{ position: 'absolute', top: '10px', right: '10px', width: '16px', height: '16px', borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'white' }}>\u2713</div>
-                    )}
-                    <div style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1, color: isDone ? '#4ade80' : 'var(--text-faint)', marginBottom: '6px' }}>{step.n}</div>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>{title}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{sub}</div>
-                  </div>
-                </Link>
+                <div key={step.doneKey} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <Link href={step.href} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      background: 'var(--bg-card)',
+                      border: `1px solid ${isDone ? '#16a34a55' : 'var(--border)'}`,
+                      borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', position: 'relative',
+                    }}>
+                      {isDone && (
+                        <div style={{ position: 'absolute', top: '10px', right: '10px', width: '16px', height: '16px', borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'white' }}>&#10003;</div>
+                      )}
+                      <div style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1, color: isDone ? '#4ade80' : 'var(--text-faint)', marginBottom: '6px' }}>{step.n}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>{title}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '8px' }}>{sub}</div>
+                      <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '600' }}>{cta}</div>
+                    </div>
+                  </Link>
+                  {/* Step 2: extra bridge link */}
+                  {isStep2 && (
+                    <a href="https://superbridge.app" target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'block', textDecoration: 'none', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#60a5fa', fontWeight: '600', textAlign: 'center' }}>
+                      Bridge &#8599; Superbridge
+                    </a>
+                  )}
+                </div>
               )
             })}
           </div>
@@ -189,10 +198,10 @@ export default function DashboardPage() {
             <AnalyticCard label={tx(d.uniqueContracts, lang)} value={V(stats?.uniqueContracts)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-            <AnalyticCard label={tx(d.gasUsed, lang)}      value={loading ? '...' : stats?.gasEth != null ? stats.gasEth.toFixed(4) : '\u2014'} />
-            <AnalyticCard label={tx(d.lastActivity, lang)} value={loading ? '...' : (stats?.lastActivity ?? '\u2014')} />
+            <AnalyticCard label={tx(d.gasUsed, lang)}      value={loading ? '...' : stats?.gasEth != null ? stats.gasEth.toFixed(4) : '—'} />
+            <AnalyticCard label={tx(d.lastActivity, lang)} value={loading ? '...' : (stats?.lastActivity ?? '—')} />
             <AnalyticCard label={tx(d.builderScore, lang)} value={V(stats?.builderScore)} />
-            <AnalyticCard label={tx(d.gmScore, lang)}      value={loading ? '...' : (totalScore?.toString() ?? '\u2014')} sub={streak > 0 ? `${streak} ${tx(c.dayStreak, lang)}` : undefined} />
+            <AnalyticCard label={tx(d.gmScore, lang)}      value={loading ? '...' : (totalScore?.toString() ?? '—')} sub={streak > 0 ? `${streak} ${tx(c.dayStreak, lang)}` : undefined} />
           </div>
         </div>
 
@@ -211,7 +220,7 @@ export default function DashboardPage() {
                 { label: tx(d.earnedEth, lang),      value: referral.totalEarned,               color: '#22c55e' },
                 { label: tx(d.todayScore, lang),     value: referral.dailyEarnings > 0 ? `+${referral.dailyEarnings}` : '0', color: '#f97316' },
                 { label: tx(d.commission, lang),     value: '10%',                              color: '#8b5cf6' },
-              ]).map((item, i) => (
+              ] as const).map((item, i) => (
                 <div key={i} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
                   <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{item.label}</div>
                   <div style={{ fontSize: '16px', fontWeight: '700', color: item.color }}>{item.value}</div>
@@ -244,9 +253,15 @@ export default function DashboardPage() {
         {/* ── 5. WALLET ────────────────────────────────────────────────── */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{address?.slice(0, 8)}\u2026{address?.slice(-6)}</div>
-            {streak > 0 && <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600' }}>{streak} {tx(c.dayStreak, lang)}{milestone ? ` \u2014 ${milestone.daysLeft}d to Day ${milestone.day}` : ''}</div>}
-            {gmmedToday && <div style={{ fontSize: '11px', color: '#4ade80' }}>\u2713 GM</div>}
+            <div style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+              {address?.slice(0, 8)}&#8230;{address?.slice(-6)}
+            </div>
+            {streak > 0 && (
+              <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600' }}>
+                {streak} {tx(c.dayStreak, lang)}{milestone ? ` — ${milestone.daysLeft}d to Day ${milestone.day}` : ''}
+              </div>
+            )}
+            {gmmedToday && <div style={{ fontSize: '11px', color: '#4ade80' }}>&#10003; GM</div>}
           </div>
           <a href={`https://basescan.org/address/${address}`} target="_blank" rel="noopener noreferrer"
             style={{ fontSize: '12px', color: '#60a5fa', textDecoration: 'none', padding: '5px 10px', background: 'var(--bg-card2)', borderRadius: '6px', border: '1px solid var(--border)' }}>

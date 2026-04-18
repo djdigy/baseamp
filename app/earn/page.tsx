@@ -71,7 +71,7 @@ function VaultRow({ vault }: { vault: Vault }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
             <AssetBadge symbol={vault.asset} />
-            {vault.isBtc && <span style={{ fontSize: '9px', background: 'var(--bg-card2)', color: '#f59e0b', border: '1px solid #f59e0b44', padding: '2px 6px', borderRadius: '99px', fontWeight: '700' }}>\u20BF BTC</span>}
+            {vault.isBtc && <span style={{ fontSize: '9px', background: 'var(--bg-card2)', color: '#f59e0b', border: '1px solid #f59e0b44', padding: '2px 6px', borderRadius: '99px', fontWeight: '700' }}>₿ BTC</span>}
             {vault.isV2 && <span style={{ fontSize: '9px', background: 'var(--bg-card2)', color: '#60a5fa', border: '1px solid #60a5fa44', padding: '2px 6px', borderRadius: '99px' }}>V2</span>}
             <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>{vault.protocol} · Base</span>
           </div>

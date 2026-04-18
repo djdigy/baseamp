@@ -60,7 +60,7 @@ function MilestoneBar({ streak }: { streak: number }) {
               fontSize: '12px', color: done ? 'white' : '#374151',
               boxShadow: streak === day ? '0 0 12px #f97316aa' : 'none',
             }}>
-              {done ? '\u2713' : day}
+              {done ? '✓' : day}
             </div>
             <div style={{ fontSize: '9px', color: done ? '#f97316' : '#374151' }}>+{bonus}</div>
           </div>
@@ -201,12 +201,12 @@ export default function GmPage() {
     ? tx(g.hintAgain, lang)
     : tx(g.hintFirst, lang)
 
-  const streakIcon = data.gmmedToday ? '\u2705'
-    : isUrgent ? '\u23F3'
-    : data.streak >= 30 ? '\uD83D\uDC51'
-    : data.streak >= 7 ? '\uD83D\uDD25'
-    : data.streak >= 3 ? '\u26A1'
-    : '\u2600'
+  const streakIcon = data.gmmedToday ? '✅'
+    : isUrgent ? '⏳'
+    : data.streak >= 30 ? '👑'
+    : data.streak >= 7 ? '🔥'
+    : data.streak >= 3 ? '⚡'
+    : '☀'
 
   return (
     <AppLayout title="GM">
@@ -221,7 +221,7 @@ export default function GmPage() {
           {/* Streak loss banner */}
           {streakLost && !data.gmmedToday && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>\uD83D\uDC94</span>
+              <span style={{ fontSize: '20px' }}>💔</span>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>{tx(g.streakLost, lang)}</div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tx(g.streakLostSub, lang)}</div>
@@ -238,7 +238,7 @@ export default function GmPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>{isUrgent ? '\uD83D\uDEA8' : '\u26A0\uFE0F'}</span>
+                <span style={{ fontSize: '18px' }}>{isUrgent ? '🚨' : '⚠️'}</span>
                 <div style={{ fontSize: '13px', fontWeight: '600', color: isUrgent ? '#f97316' : '#fbbf24' }}>
                   {tx(g.streakWarning, lang)} {data.streak}{tx(g.streakDays, lang)}
                 </div>
@@ -402,7 +402,7 @@ export default function GmPage() {
                   borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
                 }}>
                   <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: 'var(--text-muted)', minWidth: '20px', textAlign: 'center' }}>
-                    {entry.rank === 1 ? '\uD83E\uDD47' : entry.rank === 2 ? '\uD83E\uDD48' : entry.rank === 3 ? '\uD83E\uDD49' : `#${entry.rank}`}
+                    {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '12px', fontWeight: isMe ? '700' : '500', color: isMe ? '#4ade80' : 'var(--text-primary)', fontFamily: entry.code || isMe ? 'inherit' : 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
