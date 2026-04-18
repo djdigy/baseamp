@@ -105,7 +105,7 @@ export default function DashboardPage() {
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '16px' }}>\u{1F4CB}</span>
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>&#9432;</span>
               <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>{tx(d.guideTitle, lang)}</div>
             </div>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', transform: guideOpen ? 'rotate(180deg)' : 'none', display: 'inline-block', transition: 'transform 0.2s' }}>\u25be</span>

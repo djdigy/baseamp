@@ -20,8 +20,8 @@ export const TEXT = {
     // Airdrop guide
     guideTitle:      t('Airdrop Guide', 'Airdrop Rehberi'),
     guideIntro:      t(
-      'What matters on Base is not doing everything at once, but spreading activity over time. Follow the steps below on BaseAmp \u{1F447}',
-      "Base'te \u00f6nemli olan tek seferde \u00e7ok i\u015flem yapmak de\u011fil, bunu zamana yaymakt\u0131r. A\u015fa\u011f\u0131daki ad\u0131mlar\u0131 BaseAmp \xfczerinden takip edebilirsin \u{1F447}"
+      'What matters on Base is not doing everything at once, but spreading activity over time. Follow the steps below on BaseAmp 👇',
+      "Base'te \u00f6nemli olan tek seferde \u00e7ok i\u015flem yapmak de\u011fil, bunu zamana yaymakt\u0131r. A\u015fa\u011f\u0131daki ad\u0131mlar\u0131 BaseAmp \xfczerinden takip edebilirsin 👇"
     ),
     guideWarning:    t(
       '\u26d4 These steps alone are not enough. To be visible in the Base ecosystem, you should also:',

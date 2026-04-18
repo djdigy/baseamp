@@ -6,9 +6,9 @@ import { useAccount } from 'wagmi'
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '\u25c8', group: 'Main' },
-  { href: '/earn',      label: 'Earn',      icon: '\u{1F4B0}', group: 'Main', badge: 'NEW' },
-  { href: '/swap',      label: 'Swap',      icon: '\u{1F501}', group: 'Main' },
-  { href: '/deploy',    label: 'Deploy',    icon: '\u{1F680}', group: 'Tools' },
+  { href: '/earn',      label: 'Earn',      icon: '💰', group: 'Main', badge: 'NEW' },
+  { href: '/swap',      label: 'Swap',      icon: '🔁', group: 'Main' },
+  { href: '/deploy',    label: 'Deploy',    icon: '🚀', group: 'Tools' },
   { href: '/gm',        label: 'GM',        icon: '\u2600',    group: 'Tools' },
 ]
 
