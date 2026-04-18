@@ -1,6 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
+import { PageInfo } from '@/components/PageInfo'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { parseUnits, toHex, encodeAbiParameters, parseAbiParameters, concat } from 'viem'
@@ -149,6 +150,10 @@ export default function DeployPage() {
   return (
     <AppLayout title="Deploy Contract">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <PageInfo
+          en={'You can create your own token or NFT here.\nFill the details and deploy directly on Base. Even a simple deploy shows deeper interaction.'}
+          tr={'Burada kendi token veya NFT\'ini oluşturabilirsin.\nBilgileri doldurup Base üzerinde yayınlarsın. Basit bir deploy bile daha derin kullanım gösterir.'}
+        />
 
         {/* Type */}
         <div>

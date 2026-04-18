@@ -1,6 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
+import { PageInfo } from '@/components/PageInfo'
 import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 import { toHex } from 'viem'
@@ -206,6 +207,10 @@ export default function GmPage() {
   return (
     <AppLayout title="GM">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
+        <PageInfo
+          en={'What is GM?\nA simple way to stay active every day. You send a GM, keep your streak, and build activity over time.\nSpreading activity matters more than doing everything in one day.'}
+          tr={'GM nedir?\nHer gün aktif kalmanı sağlayan basit bir sistem. GM gönderirsin, streak oluşur ve aktiviten zamanla birikir.\nHer şeyi tek günde yapmak yerine zamana yaymak daha önemlidir.'}
+        />
 
         {/* Left column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

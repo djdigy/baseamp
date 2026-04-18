@@ -1,6 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
+import { PageInfo } from '@/components/PageInfo'
 import { useEffect, useState } from 'react'
 
 interface Vault {
@@ -166,6 +167,10 @@ export default function EarnPage() {
   return (
     <AppLayout title="Earn">
       <div style={{ maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <PageInfo
+          en={'What are these vaults?\nThese are places where you can put your assets to work. Instead of just holding tokens, you deposit them and earn yield over time.\nUsing DeFi shows real activity, not just random transactions.\nPick a vault, deposit a small amount, and stay consistent.'}
+          tr={'Bu vault\'lar ne?\nBunlar varlıklarını değerlendirebileceğin yerler. Token\'ları boşta tutmak yerine yatırırsın ve zamanla getiri elde edersin.\nDeFi kullanmak, rastgele işlem atmaktan daha gerçek bir kullanım gösterir.\nBir vault seç, küçük bir miktar yatır ve devamlı kal.'}
+        />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           {[
             { label: 'Best APY', value: loading ? '...' : `${bestApy}%`, color: '#22c55e' },

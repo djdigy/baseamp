@@ -1,6 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
+import { PageInfo } from '@/components/PageInfo'
 import { useAccount } from 'wagmi'
 import { useState, useEffect } from 'react'
 
@@ -59,6 +60,10 @@ export default function ReferralPage() {
   return (
     <AppLayout title="Referral">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <PageInfo
+          en={'Invite others using your link.\nWhen they stay active, you benefit too. Your network helps grow your score.'}
+          tr={'Linkinle insanları davet et.\nOnlar aktif oldukça sen de kazanırsın. Ağın büyüdükçe skorun artar.'}
+        />
 
         {/* Score engine header */}
         <div style={{ background: 'linear-gradient(135deg, #0a1a1a, #081a14)', border: '1px solid #2dd4bf33', borderRadius: '12px', padding: '16px 20px' }}>

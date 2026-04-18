@@ -1,6 +1,7 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
+import { PageInfo } from '@/components/PageInfo'
 
 interface Dex {
   name: string
@@ -97,6 +98,10 @@ export default function SwapPage() {
   return (
     <AppLayout title="Swap">
       <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <PageInfo
+          en={'This is where you swap tokens on Base.\nUsing different platforms helps you find better prices. Trying multiple apps shows real usage.'}
+          tr={'Burası token takası yapabileceğin yer.\nFarklı platformlar daha iyi fiyat bulmanı sağlar. Birden fazla uygulama kullanmak gerçek kullanım gösterir.'}
+        />
 
         {/* Info banner */}
         <div style={{
