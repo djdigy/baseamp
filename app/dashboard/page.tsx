@@ -4,8 +4,8 @@ import { AppLayout } from '@/components/AppLayout'
 import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
 import { getNextMilestone } from '@/lib/gm'
+import { useLang } from '@/components/Providers'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface WalletStats { txCount: number; activeDays: number; builderScore: number; firstTx: string | null }
@@ -116,23 +116,6 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string;
   )
 }
 
-// ── LangToggle ───────────────────────────────────────────────────────────────
-function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  function toggle() {
-    const next: Lang = lang === 'en' ? 'tr' : 'en'
-    setLang(next)
-    try { localStorage.setItem('ba_lang', next) } catch (_) {}
-  }
-  return (
-    <button onClick={toggle} title="Switch language" style={{
-      background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px',
-      padding: '5px 10px', fontSize: '12px', fontWeight: '700',
-      color: 'var(--text-secondary)', cursor: 'pointer', letterSpacing: '0.04em',
-    }}>
-      {lang === 'en' ? 'TR' : 'EN'}
-    </button>
-  )
-}
 
 // ── ShareStreak ──────────────────────────────────────────────────────────────
 function ShareStreak({ streak, t }: { streak: number; t: typeof T['en'] }) {
@@ -170,19 +153,11 @@ const SECONDARY_ACTIONS = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
+  const { lang } = useLang()
   const [stats, setStats] = useState<WalletStats | null>(null)
   const [gmStatus, setGmStatus] = useState<GmStatus | null>(null)
   const [referralStatus, setReferralStatus] = useState<ReferralStatus | null>(null)
   const [loading, setLoading] = useState(false)
-  const [lang, setLang] = useState<Lang>('en')
-
-  // Restore saved language preference
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ba_lang') as Lang | null
-      if (saved === 'tr') setLang('tr')
-    } catch (_) {}
-  }, [])
 
   // Fetch all data once address is available
   useEffect(() => {
@@ -246,11 +221,6 @@ export default function DashboardPage() {
   return (
     <AppLayout title="Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-        {/* Lang toggle */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <LangToggle lang={lang} setLang={setLang} />
-        </div>
 
         {/* ── PRIMARY ACTION BLOCK ─────────────────────────────────────── */}
         {gmmedToday ? (

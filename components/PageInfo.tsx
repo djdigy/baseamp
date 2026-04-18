@@ -1,22 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-function useLang(): 'en' | 'tr' {
-  const [lang, setLang] = useState<'en' | 'tr'>('en')
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ba_lang')
-      if (saved === 'tr') setLang('tr')
-    } catch (_) {}
-  }, [])
-  return lang
-}
+import { useLang } from './Providers'
 
 export function PageInfo({ en, tr }: { en: string; tr: string }) {
-  const lang = useLang()
-  const text = lang === 'tr' ? tr : en
-
+  const { lang } = useLang()
   return (
     <div style={{
       background: 'var(--bg-card)',
@@ -29,7 +16,7 @@ export function PageInfo({ en, tr }: { en: string; tr: string }) {
       lineHeight: '1.7',
       whiteSpace: 'pre-line',
     }}>
-      {text}
+      {lang === 'tr' ? tr : en}
     </div>
   )
 }

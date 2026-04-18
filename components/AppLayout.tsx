@@ -4,6 +4,24 @@ import { Sidebar } from './Sidebar'
 import { ConnectWallet } from './ConnectWallet'
 import { ThemeToggle } from './ThemeToggle'
 import { useReferral } from '@/hooks/useReferral'
+import { useLang } from './Providers'
+
+function LangToggle() {
+  const { lang, setLang } = useLang()
+  return (
+    <button
+      onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
+      title="Switch language"
+      style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px',
+        padding: '5px 10px', fontSize: '12px', fontWeight: '700',
+        color: 'var(--text-secondary)', cursor: 'pointer', letterSpacing: '0.04em',
+      }}
+    >
+      {lang === 'en' ? 'TR' : 'EN'}
+    </button>
+  )
+}
 
 export function AppLayout({ children, title }: { children: React.ReactNode, title: string }) {
   useReferral()
@@ -20,6 +38,7 @@ export function AppLayout({ children, title }: { children: React.ReactNode, titl
         }}>
           <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)' }}>{title}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <LangToggle />
             <ThemeToggle />
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
