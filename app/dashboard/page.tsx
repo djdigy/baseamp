@@ -12,41 +12,42 @@ interface GmStatus    { streak: number; gmmedToday: boolean; score: number }
 interface ReferralStats { code: string; referralLink: string; totalReferrals: number; totalEarned: string; dailyEarnings: number }
 
 const HERO = {
-  en: "Base rewards consistent real usage over time, not one-time activity \u2014 sending a daily GM is a simple way to stay active.",
-  tr: "Base, tek seferlik i\u015flemlerden \u00e7ok zamana yay\u0131lm\u0131\u015f ger\u00e7ek kullan\u0131m\u0131 \u00f6nemser \u2014 GM g\u00f6ndererek her g\u00fcn aktif kalabilirsin.",
+  en: "What matters on Base is not doing many transactions in one day, but spreading real activity over time. Sending GM daily helps you stay active.",
+  tr: "Base\u2019te de\u011ferli olan \u015fey tek g\u00fcnde y\u00fczlerce i\u015flem atmak de\u011fil, farkl\u0131 i\u015flemleri zamana yayarak ger\u00e7ek kullan\u0131m g\u00f6stermektir. GM g\u00f6ndererek her g\u00fcn aktif kalabilirsin.",
+}
+
+const STEPS = {
+  en: [
+    { n: '1', title: 'Send GM',   sub: 'Simple daily transaction',      href: '/gm',      doneKey: 'gm' },
+    { n: '2', title: 'Swap',      sub: 'Use DEXs to generate activity', href: '/swap',     doneKey: 'swap' },
+    { n: '3', title: 'Earn',      sub: 'Deposit USDC, interact with DeFi', href: '/earn', doneKey: 'earn' },
+    { n: '4', title: 'Deploy',    sub: 'Create a contract on Base',      href: '/deploy',   doneKey: 'deploy' },
+    { n: '5', title: 'Invite',    sub: 'Share your link, earn 20%',      href: '/referral', doneKey: 'invite' },
+  ],
+  tr: [
+    { n: '1', title: 'GM G\u00f6nder', sub: 'Basit g\u00fcnl\u00fck i\u015flem',              href: '/gm',      doneKey: 'gm' },
+    { n: '2', title: 'Swap',           sub: 'DEX kullanarak aktivite \u00fcret',          href: '/swap',     doneKey: 'swap' },
+    { n: '3', title: 'Kazan',          sub: 'USDC yat\u0131r, DeFi kullan',              href: '/earn',     doneKey: 'earn' },
+    { n: '4', title: 'Deploy',         sub: 'Base\u2019te kontrat olu\u015ftur',           href: '/deploy',   doneKey: 'deploy' },
+    { n: '5', title: 'Davet Et',       sub: 'Linkinle kazan, %20 komisyon',             href: '/referral', doneKey: 'invite' },
+  ],
 }
 
 const LABELS = {
   en: {
-    sendGm: 'Send GM', sendGmSub: 'Start daily activity',
-    swap: 'Swap', swapSub: 'Use Base DEXs',
-    earn: 'Earn', earnSub: 'Put idle funds to work',
-    deploy: 'Deploy', deploySub: 'Show real on-chain usage',
-    invite: 'Invite', inviteSub: 'Earn from referrals',
-    makeTx: 'Make a Transaction',
-    stats: 'Stats', actions: 'Actions',
-    totalTx: 'Total TX', onBase: 'on Base',
+    stats: 'Stats', totalTx: 'Total TX', onBase: 'on Base',
     activeDays: 'Active Days', since: 'since',
     builderScore: 'Builder Score', gmScore: 'GM Score',
-    dayStreak: 'day streak', dailyStreak: 'Daily streak \u00b7 +5 score',
-    dayStreakSecured: '-day streak secured',
+    dayStreak: 'day streak',
     referralCta: "Share your link and earn 20% from your referrals' activity",
     copyLink: 'Copy Link', copied: 'Copied!',
   },
   tr: {
-    sendGm: 'GM G\u00f6nder', sendGmSub: 'G\u00fcnl\u00fck aktivite ba\u015flat',
-    swap: 'Swap', swapSub: 'Base DEX\u2019leri kullan',
-    earn: 'Kazan', earnSub: 'Boşta duran fonlar\u0131 de\u011flendir',
-    deploy: 'Deploy', deploySub: 'Ger\u00e7ek on-chain kullan\u0131m g\u00f6ster',
-    invite: 'Davet Et', inviteSub: 'Referanslardan kazan',
-    makeTx: 'I\u015flem Yap',
-    stats: 'I\u0307statistikler', actions: 'Eylemler',
-    totalTx: 'Toplam TX', onBase: "Base'de",
-    activeDays: 'Aktif G\u00fcn', since: 'tarihinden beri',
-    builderScore: 'Builder Puan\u0131', gmScore: 'GM Puan\u0131',
-    dayStreak: 'g\u00fcnl\u00fck seri', dailyStreak: 'G\u00fcnl\u00fck seri \u00b7 +5 puan',
-    dayStreakSecured: ' g\u00fcnl\u00fck seri g\u00fcvende',
-    referralCta: 'Linkini paylaş ve arkadaşlarının işlemlerinden %20 kazan',
+    stats: 'İstatistikler', totalTx: 'Toplam TX', onBase: "Base'de",
+    activeDays: 'Aktif Gün', since: 'tarihinden beri',
+    builderScore: 'Builder Puanı', gmScore: 'GM Puanı',
+    dayStreak: 'günlük seri',
+    referralCta: 'Linkini paylaş ve arkadaşlarının işlem ücretlerinden %20 kazan.',
     copyLink: 'Linki Kopyala', copied: 'Kopyalandı!',
   },
 }
@@ -71,6 +72,7 @@ export default function DashboardPage() {
   const [refCopied, setRefCopied] = useState(false)
 
   const t = LABELS[lang as 'en' | 'tr'] ?? LABELS.en
+  const steps = STEPS[lang as 'en' | 'tr'] ?? STEPS.en
 
   useEffect(() => {
     if (!address) return
@@ -110,18 +112,19 @@ export default function DashboardPage() {
     )
   }
 
-  const gmmedToday = gmStatus?.gmmedToday ?? false
-  const streak     = gmStatus?.streak ?? 0
-  const milestone  = getNextMilestone(streak)
-  const totalScore = gmStatus?.score ?? 0
+  const gmmedToday  = gmStatus?.gmmedToday ?? false
+  const streak      = gmStatus?.streak ?? 0
+  const milestone   = getNextMilestone(streak)
+  const totalScore  = gmStatus?.score ?? 0
+  const hasReferral = (referral?.totalReferrals ?? 0) > 0
 
-  const ACTIONS = [
-    { key: 'gm',     label: t.sendGm,  sub: t.sendGmSub,  href: '/gm',       done: gmmedToday },
-    { key: 'swap',   label: t.swap,    sub: t.swapSub,    href: '/swap',      done: false },
-    { key: 'earn',   label: t.earn,    sub: t.earnSub,    href: '/earn',      done: false },
-    { key: 'deploy', label: t.deploy,  sub: t.deploySub,  href: '/deploy',    done: false },
-    { key: 'invite', label: t.invite,  sub: t.inviteSub,  href: '/referral',  done: (referral?.totalReferrals ?? 0) > 0 },
-  ]
+  const done: Record<string, boolean> = {
+    gm: gmmedToday,
+    swap: false,
+    earn: false,
+    deploy: false,
+    invite: hasReferral,
+  }
 
   function copyReferral() {
     if (!referral?.referralLink) return
@@ -134,83 +137,40 @@ export default function DashboardPage() {
     <AppLayout title="Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-        {/* Action bar */}
+        {/* Step flow */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
-          {ACTIONS.map(action => (
-            <Link key={action.key} href={action.href} style={{ textDecoration: 'none' }}>
-              <div style={{
-                background: 'var(--bg-card)', border: `1px solid ${action.done ? '#16a34a44' : 'var(--border)'}`,
-                borderRadius: '10px', padding: '12px',
-                cursor: 'pointer', height: '100%',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <div style={{
-                    width: '16px', height: '16px', borderRadius: '50%',
-                    background: action.done ? '#16a34a' : 'var(--bg-card2)',
-                    border: `1px solid ${action.done ? '#16a34a' : 'var(--border)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '9px', color: action.done ? 'white' : 'var(--text-faint)',
-                    flexShrink: 0,
-                  }}>
-                    {action.done ? '\u2713' : '\u2022'}
+          {steps.map(step => {
+            const isDone = done[step.doneKey]
+            return (
+              <Link key={step.doneKey} href={step.href} style={{ textDecoration: 'none' }}>
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: `1px solid ${isDone ? '#16a34a55' : 'var(--border)'}`,
+                  borderRadius: '10px', padding: '14px 12px',
+                  cursor: 'pointer', height: '100%', position: 'relative',
+                }}>
+                  {isDone && (
+                    <div style={{
+                      position: 'absolute', top: '10px', right: '10px',
+                      width: '16px', height: '16px', borderRadius: '50%',
+                      background: '#16a34a',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '9px', color: 'white',
+                    }}>\u2713</div>
+                  )}
+                  <div style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1, color: isDone ? '#4ade80' : 'var(--text-faint)', marginBottom: '6px' }}>
+                    {step.n}
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: action.done ? '#4ade80' : 'var(--text-primary)' }}>
-                    {action.label}
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '3px' }}>
+                    {step.title}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                    {step.sub}
                   </div>
                 </div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', paddingLeft: '22px' }}>
-                  {action.sub}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Hero */}
-        <div style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)',
-          borderRadius: '12px', padding: '18px 20px',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px',
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '14px' }}>
-              {HERO[lang as 'en' | 'tr'] ?? HERO.en}
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link href="/gm" style={{ textDecoration: 'none' }}>
-                <button style={{
-                  background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white',
-                  border: 'none', borderRadius: '8px', padding: '9px 18px',
-                  fontSize: '13px', fontWeight: '700', cursor: 'pointer',
-                }}>
-                  {t.sendGm}
-                </button>
               </Link>
-              <Link href="/swap" style={{ textDecoration: 'none' }}>
-                <button style={{
-                  background: 'var(--bg-card2)', color: 'var(--text-secondary)',
-                  border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 18px',
-                  fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-                }}>
-                  {t.makeTx}
-                </button>
-              </Link>
-            </div>
-          </div>
-          <div style={{ textAlign: 'center', flexShrink: 0, minWidth: '64px' }}>
-            <div style={{ fontSize: '46px', fontWeight: '900', lineHeight: 1, color: streak > 0 ? '#f97316' : 'var(--text-faint)' }}>
-              {streak}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{t.dayStreak}</div>
-            {milestone && (
-              <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px' }}>
-                {milestone.daysLeft}d to Day {milestone.day}
-              </div>
-            )}
-            {gmmedToday && (
-              <div style={{ fontSize: '10px', color: '#4ade80', marginTop: '4px' }}>\u2713 GM</div>
-            )}
-          </div>
+            )
+          })}
         </div>
 
         {/* Stats */}
@@ -219,10 +179,10 @@ export default function DashboardPage() {
             {t.stats}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-            <StatCard label={t.totalTx}      value={loading ? '...' : (stats?.txCount?.toLocaleString() ?? '—')} sub={t.onBase} />
-            <StatCard label={t.activeDays}   value={loading ? '...' : (stats?.activeDays?.toString() ?? '—')} sub={stats?.firstTx ? `${t.since} ${stats.firstTx}` : undefined} />
-            <StatCard label={t.builderScore} value={loading ? '...' : (stats?.builderScore?.toString() ?? '—')} accent="#60a5fa" />
-            <StatCard label={t.gmScore}      value={loading ? '...' : (totalScore?.toString() ?? '—')} sub={streak > 0 ? `${streak} ${t.dayStreak}` : undefined} accent="#f97316" />
+            <StatCard label={t.totalTx}      value={loading ? '...' : (stats?.txCount?.toLocaleString() ?? '\u2014')} sub={t.onBase} />
+            <StatCard label={t.activeDays}   value={loading ? '...' : (stats?.activeDays?.toString() ?? '\u2014')} sub={stats?.firstTx ? `${t.since} ${stats.firstTx}` : undefined} />
+            <StatCard label={t.builderScore} value={loading ? '...' : (stats?.builderScore?.toString() ?? '\u2014')} accent="#60a5fa" />
+            <StatCard label={t.gmScore}      value={loading ? '...' : (totalScore?.toString() ?? '\u2014')} sub={streak > 0 ? `${streak} ${t.dayStreak}` : undefined} accent="#f97316" />
           </div>
         </div>
 
@@ -241,29 +201,37 @@ export default function DashboardPage() {
               }}>
                 {referral.referralLink}
               </div>
-              <button
-                onClick={copyReferral}
-                style={{
-                  background: refCopied ? '#052e16' : 'var(--bg-card2)',
-                  border: `1px solid ${refCopied ? '#16a34a' : 'var(--border)'}`,
-                  borderRadius: '6px', padding: '7px 14px',
-                  fontSize: '12px', fontWeight: '600',
-                  color: refCopied ? '#4ade80' : 'var(--text-secondary)',
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
+              <button onClick={copyReferral} style={{
+                background: refCopied ? '#052e16' : 'var(--bg-card2)',
+                border: `1px solid ${refCopied ? '#16a34a' : 'var(--border)'}`,
+                borderRadius: '6px', padding: '7px 14px',
+                fontSize: '12px', fontWeight: '600',
+                color: refCopied ? '#4ade80' : 'var(--text-secondary)',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>
                 {refCopied ? t.copied : t.copyLink}
               </button>
             </div>
           </div>
         )}
 
+        {/* Hero */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px' }}>
+          <div style={{ flex: 1, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+            {HERO[lang as 'en' | 'tr'] ?? HERO.en}
+          </div>
+          <div style={{ textAlign: 'center', flexShrink: 0, minWidth: '60px' }}>
+            <div style={{ fontSize: '44px', fontWeight: '900', lineHeight: 1, color: streak > 0 ? '#f97316' : 'var(--text-faint)' }}>
+              {streak}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>{t.dayStreak}</div>
+            {milestone && <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '3px' }}>{milestone.daysLeft}d \u2192 Day {milestone.day}</div>}
+            {gmmedToday && <div style={{ fontSize: '10px', color: '#4ade80', marginTop: '3px' }}>\u2713 GM</div>}
+          </div>
+        </div>
+
         {/* Wallet */}
-        <div style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)',
-          borderRadius: '12px', padding: '12px 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
             {address?.slice(0, 8)}\u2026{address?.slice(-6)}
           </div>

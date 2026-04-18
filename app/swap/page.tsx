@@ -38,9 +38,9 @@ const DEXES: Dex[] = [
 ]
 
 const CATEGORY_LABELS = {
-  aggregator: { label: 'Aggregators', desc: 'Best price across all DEXs', color: '#8b5cf6' },
-  dex: { label: 'DEX', desc: 'Direct liquidity pools', color: '#3b82f6' },
-  stable: { label: 'Stablecoin', desc: 'Optimized stable swaps', color: '#22c55e' },
+  aggregator: { label: 'Aggregators', desc: 'Scan multiple DEXs and give you the best price automatically.', color: '#8b5cf6' },
+  dex: { label: 'DEX', desc: 'Decentralized exchanges where trades happen on-chain using liquidity pools.', color: '#3b82f6' },
+  stable: { label: 'Stablecoin', desc: 'Optimized for stable-to-stable swaps with minimal slippage.', color: '#22c55e' },
 }
 
 function DexCard({ dex }: { dex: Dex }) {
@@ -64,7 +64,7 @@ function DexCard({ dex }: { dex: Dex }) {
         transition: 'border-color 0.15s',
       }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = cat.color)}
-        onMouseLeave={e => (e.currentTarget.style.borderColor = '#1a1d27')}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
@@ -105,19 +105,18 @@ export default function SwapPage() {
 
         {/* Info banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #0f1a2e, #0a1628)',
-          border: '1px solid #1e3a5f',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
           borderRadius: '12px',
           padding: '16px 20px',
           display: 'flex', alignItems: 'center', gap: '14px',
         }}>
-          <div style={{ fontSize: '28px' }}>🔁</div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
-              Best Base DEXs & Aggregators
+              Best Base DEXs &amp; Aggregators
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              Click any DEX to swap directly on Base mainnet. Aggregators give the best price across all pools.
+              Click any platform to trade directly on Base. Aggregators find the best price across all pools.
             </div>
           </div>
         </div>

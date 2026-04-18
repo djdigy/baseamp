@@ -18,7 +18,7 @@ interface GmData {
   lastGm: string | null
 }
 interface FeedItem { address: string; streak: number; time: number }
-interface LeaderboardEntry { address: string; score: number; rank: number }
+interface LeaderboardEntry { address: string; score: number; rank: number; code: string | null }
 
 function getTimeUntilReset() {
   const now = new Date()
@@ -217,7 +217,7 @@ export default function GmPage() {
 
           {/* Streak loss banner */}
           {streakLost && !data.gmmedToday && (
-            <div style={{ background: '#1a0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '20px' }}>\uD83D\uDC94</span>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>Streak lost. Start again</div>
@@ -283,7 +283,7 @@ export default function GmPage() {
                     </div>
                     <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : '#78350f' }}>day streak</div>
                   </div>
-                  <div style={{ width: '1px', height: '44px', background: '#2d2008' }} />
+                  <div style={{ width: '1px', height: '44px', background: 'var(--border)' }} />
                   <div>
                     <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>
                       {loading ? '...' : data.score}
@@ -309,7 +309,7 @@ export default function GmPage() {
 
           {/* Earned message */}
           {status === 'success' && earnedMsg && (
-            <div style={{ background: '#052e16', border: '1px solid #16a34a', borderRadius: '10px', padding: '14px 16px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid #16a34a55', borderRadius: '10px', padding: '14px 16px' }}>
               <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>GM sent +{earnedMsg.score} score</div>
               {earnedMsg.milestone && (
                 <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
@@ -321,7 +321,7 @@ export default function GmPage() {
 
           {/* Error */}
           {status === 'error' && error && (
-            <div style={{ background: '#2d0a0a', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
               {error}
             </div>
           )}
@@ -387,21 +387,27 @@ export default function GmPage() {
               <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>No scores yet — be first!</div>
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
-              const label = isMe
+              const primary = isMe
                 ? (entry.rank === 1 ? "You're #1" : 'You')
-                : `Player #${entry.rank}`
+                : (entry.code ?? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`)
+              const secondary = !isMe && entry.code ? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}` : null
               return (
                 <div key={entry.address} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 16px', borderBottom: '1px solid var(--border)',
-                  background: isMe ? '#1e2a1e' : 'transparent',
+                  background: isMe ? 'var(--bg-card2)' : 'transparent',
                   borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
                 }}>
                   <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: 'var(--text-muted)', minWidth: '20px', textAlign: 'center' }}>
                     {entry.rank === 1 ? '\uD83E\uDD47' : entry.rank === 2 ? '\uD83E\uDD48' : entry.rank === 3 ? '\uD83E\uDD49' : `#${entry.rank}`}
                   </span>
-                  <div style={{ flex: 1, fontSize: '12px', fontWeight: isMe ? '700' : '400', color: isMe ? '#4ade80' : '#94a3b8' }}>
-                    {label}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '12px', fontWeight: isMe ? '700' : '500', color: isMe ? '#4ade80' : 'var(--text-primary)', fontFamily: entry.code || isMe ? 'inherit' : 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {primary}
+                    </div>
+                    {secondary && (
+                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', fontFamily: 'monospace', marginTop: '1px' }}>{secondary}</div>
+                    )}
                   </div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#fbbf24' }}>{entry.score}</div>
                 </div>
