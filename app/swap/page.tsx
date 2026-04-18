@@ -53,8 +53,8 @@ function DexCard({ dex }: { dex: Dex }) {
       style={{ textDecoration: 'none' }}
     >
       <div style={{
-        background: '#0f1117',
-        border: '1px solid #1a1d27',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
         borderRadius: '12px',
         padding: '14px 16px',
         display: 'flex',
@@ -69,23 +69,23 @@ function DexCard({ dex }: { dex: Dex }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: '36px', height: '36px', borderRadius: '10px',
-            background: '#1a1d27', display: 'flex', alignItems: 'center',
+            background: 'var(--bg-card2)', display: 'flex', alignItems: 'center',
             justifyContent: 'center', fontSize: '18px', flexShrink: 0,
           }}>
             {dex.logo}
           </div>
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#f1f5f9' }}>{dex.name}</div>
-            <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>{dex.desc}</div>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{dex.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{dex.desc}</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           {dex.volume && (
-            <span style={{ fontSize: '11px', color: '#374151', background: '#1a1d27', padding: '3px 8px', borderRadius: '6px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-faint)', background: 'var(--bg-card2)', padding: '3px 8px', borderRadius: '6px' }}>
               {dex.volume}
             </span>
           )}
-          <span style={{ fontSize: '14px', color: '#374151' }}>↗</span>
+          <span style={{ fontSize: '14px', color: 'var(--text-faint)' }}>↗</span>
         </div>
       </div>
     </a>
@@ -99,8 +99,8 @@ export default function SwapPage() {
     <AppLayout title="Swap">
       <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <PageInfo
-          en={'This is where you swap tokens on Base.\nUsing different platforms helps you find better prices. Trying multiple apps shows real usage.'}
-          tr={'Burası token takası yapabileceğin yer.\nFarklı platformlar daha iyi fiyat bulmanı sağlar. Birden fazla uygulama kullanmak gerçek kullanım gösterir.'}
+          en={"Swapping tokens is active network usage. Trying different platforms creates a stronger signal than using only one."}
+          tr={"Token takası yaparak ağı aktif kullanırsın. Farklı platformları denemek gerçek kullanım sinyali oluşturur."}
         />
 
         {/* Info banner */}
@@ -113,10 +113,10 @@ export default function SwapPage() {
         }}>
           <div style={{ fontSize: '28px' }}>🔁</div>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: '#f1f5f9', marginBottom: '4px' }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
               Best Base DEXs & Aggregators
             </div>
-            <div style={{ fontSize: '12px', color: '#475569' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
               Click any DEX to swap directly on Base mainnet. Aggregators give the best price across all pools.
             </div>
           </div>
@@ -131,12 +131,12 @@ export default function SwapPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                 <div style={{ width: '3px', height: '18px', background: info.color, borderRadius: '2px' }} />
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#e2e8f0' }}>{info.label}</div>
-                  <div style={{ fontSize: '11px', color: '#475569' }}>{info.desc}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>{info.label}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{info.desc}</div>
                 </div>
                 <div style={{
                   marginLeft: 'auto', fontSize: '10px',
-                  background: '#1a1d27', color: '#4b5563',
+                  background: 'var(--bg-card2)', color: 'var(--text-faint)',
                   padding: '2px 8px', borderRadius: '99px',
                 }}>
                   {items.length} platforms
@@ -149,7 +149,7 @@ export default function SwapPage() {
           )
         })}
 
-        <div style={{ fontSize: '11px', color: '#374151', textAlign: 'center', padding: '8px 0' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'center', padding: '8px 0' }}>
           All swaps happen directly on the respective platforms. BaseAmp does not take any swap fees.
         </div>
       </div>

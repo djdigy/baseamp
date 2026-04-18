@@ -19,15 +19,15 @@ function InputField({ label, value, onChange, placeholder, type = 'text' }: {
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>{label}</label>
+      <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500' }}>{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
-          background: '#0a0b0f', border: '1px solid #1a1d27', borderRadius: '8px',
-          padding: '10px 12px', fontSize: '13px', color: '#f1f5f9', outline: 'none', width: '100%',
+          background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px',
+          padding: '10px 12px', fontSize: '13px', color: 'var(--text-primary)', outline: 'none', width: '100%',
         }}
       />
     </div>
@@ -44,8 +44,8 @@ function TypeCard({ title, desc, icon, selected, onClick }: {
       borderRadius: '12px', padding: '16px', cursor: 'pointer',
     }}>
       <div style={{ fontSize: '24px', marginBottom: '8px' }}>{icon}</div>
-      <div style={{ fontSize: '13px', fontWeight: '600', color: '#f1f5f9', marginBottom: '3px' }}>{title}</div>
-      <div style={{ fontSize: '11px', color: '#475569' }}>{desc}</div>
+      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '3px' }}>{title}</div>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{desc}</div>
     </div>
   )
 }
@@ -141,7 +141,7 @@ export default function DeployPage() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <div style={{ fontSize: '48px' }}>🚀</div>
           <div style={{ fontSize: '18px', fontWeight: '600' }}>Connect your wallet</div>
-          <div style={{ fontSize: '14px', color: '#475569' }}>Deploy contracts on Base mainnet</div>
+          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Deploy contracts on Base mainnet</div>
         </div>
       </AppLayout>
     )
@@ -151,13 +151,13 @@ export default function DeployPage() {
     <AppLayout title="Deploy Contract">
       <div style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <PageInfo
-          en={'You can create your own token or NFT here.\nFill the details and deploy directly on Base. Even a simple deploy shows deeper interaction.'}
-          tr={'Burada kendi token veya NFT\'ini oluşturabilirsin.\nBilgileri doldurup Base üzerinde yayınlarsın. Basit bir deploy bile daha derin kullanım gösterir.'}
+          en={"Even a simple contract deploy counts as real on-chain usage. Fill in the details and deploy directly on Base."}
+          tr={"Basit bir kontrat deploy etmek bile ağ üzerinde gerçek kullanım olarak görülür. Bilgileri doldurup Base üzerinde yayınlarsın."}
         />
 
         {/* Type */}
         <div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Contract Type
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
@@ -168,8 +168,8 @@ export default function DeployPage() {
         </div>
 
         {/* Form */}
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db' }}>Parameters</div>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Parameters</div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <InputField label="Token Name" value={name} onChange={setName} placeholder="My Token" />
@@ -184,7 +184,7 @@ export default function DeployPage() {
           )}
 
           {/* Info - fee gizli */}
-          <div style={{ background: '#0a0b0f', border: '1px solid #1a1d27', borderRadius: '8px', padding: '12px', fontSize: '11px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', fontSize: '11px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div>🔗 Network: Base Mainnet</div>
             <div>📎 Builder Code: {BUILDER_CODE}</div>
             <div>⚡ Total supply minted to your wallet</div>

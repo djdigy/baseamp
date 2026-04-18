@@ -57,7 +57,7 @@ function VaultRow({ vault }: { vault: Vault }) {
   return (
     <a href={vault.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
       <div
-        style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderBottom: '1px solid #1a1d2744', cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
         onMouseEnter={e => (e.currentTarget.style.background = '#1a1d2744')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
@@ -65,25 +65,25 @@ function VaultRow({ vault }: { vault: Vault }) {
           {vault.protocol === 'Morpho' ? 'M' : 'A'}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0', marginBottom: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {vault.name}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
             <AssetBadge symbol={vault.asset} />
             {vault.isBtc && <span style={{ fontSize: '9px', background: '#27200a', color: '#f59e0b', border: '1px solid #78350f', padding: '2px 6px', borderRadius: '99px', fontWeight: '700' }}>₿ BTC</span>}
             {vault.isV2 && <span style={{ fontSize: '9px', background: '#172554', color: '#60a5fa', border: '1px solid #1e3a5f', padding: '2px 6px', borderRadius: '99px' }}>V2</span>}
-            <span style={{ fontSize: '10px', color: '#374151' }}>{vault.protocol} · Base</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>{vault.protocol} · Base</span>
           </div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: '11px', color: '#475569', marginBottom: '2px' }}>TVL</div>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>${vault.tvl}M</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>TVL</div>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>${vault.tvl}M</div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '70px' }}>
-          <div style={{ fontSize: '11px', color: '#475569', marginBottom: '2px' }}>APY</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>APY</div>
           <div style={{ fontSize: '18px', fontWeight: '800', color: parseFloat(vault.apy) > 0 ? '#22c55e' : '#475569' }}>{vault.apy}%</div>
         </div>
-        <div style={{ fontSize: '14px', color: '#374151', flexShrink: 0 }}>↗</div>
+        <div style={{ fontSize: '14px', color: 'var(--text-faint)', flexShrink: 0 }}>↗</div>
       </div>
     </a>
   )
@@ -168,8 +168,8 @@ export default function EarnPage() {
     <AppLayout title="Earn">
       <div style={{ maxWidth: '720px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <PageInfo
-          en={'What are these vaults?\nThese are places where you can put your assets to work. Instead of just holding tokens, you deposit them and earn yield over time.\nUsing DeFi shows real activity, not just random transactions.\nPick a vault, deposit a small amount, and stay consistent.'}
-          tr={'Bu vault\'lar ne?\nBunlar varlıklarını değerlendirebileceğin yerler. Token\'ları boşta tutmak yerine yatırırsın ve zamanla getiri elde edersin.\nDeFi kullanmak, rastgele işlem atmaktan daha gerçek bir kullanım gösterir.\nBir vault seç, küçük bir miktar yatır ve devamlı kal.'}
+          en={"Idle tokens can work for you here. Starting small and staying consistent shows more genuine usage than one-time activity."}
+          tr={"Boş duran token'ları burada değerlendirebilirsin. Küçük başlayıp zamanla devam etmek daha doğal kullanım gösterir."}
         />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           {[
@@ -177,8 +177,8 @@ export default function EarnPage() {
             { label: 'Total TVL', value: loading ? '...' : totalTvl === '—' ? '—' : `$${totalTvl}M`, color: '#60a5fa' },
             { label: 'Vaults', value: loading ? '...' : filtered.length.toString(), color: '#f97316' },
           ].map((s, i) => (
-            <div key={i} style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>{s.label}</div>
+            <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>{s.label}</div>
               <div style={{ fontSize: '22px', fontWeight: '700', color: s.color }}>{s.value}</div>
             </div>
           ))}
@@ -192,9 +192,9 @@ export default function EarnPage() {
           <FilterButton active={filter === 'aave'} onClick={() => setFilter('aave')}>Aave</FilterButton>
         </div>
 
-        <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #1a1d27' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#d1d5db' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
               {loading ? 'Loading vaults...' : `${filtered.length} vaults`}
             </div>
             <div style={{ fontSize: '10px', color: source === 'live' ? '#22c55e' : '#94a3b8' }}>
@@ -202,11 +202,11 @@ export default function EarnPage() {
             </div>
           </div>
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#475569' }}>Loading...</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</div>
           ) : filtered.map((v, i) => <VaultRow key={i} vault={v} />)}
         </div>
 
-        <div style={{ fontSize: '11px', color: '#374151', lineHeight: '1.6' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-faint)', lineHeight: '1.6' }}>
           ⚠️ APY rates are variable. Always do your own research. BaseAmp does not take any fees on deposits.
         </div>
       </div>

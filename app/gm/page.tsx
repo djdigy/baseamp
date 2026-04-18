@@ -179,7 +179,7 @@ export default function GmPage() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
           <div style={{ fontSize: '48px' }}>&#9728;</div>
           <div style={{ fontSize: '18px', fontWeight: '600' }}>Connect your wallet</div>
-          <div style={{ fontSize: '14px', color: '#475569' }}>Send daily GM and earn score</div>
+          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Send daily GM and earn score</div>
         </div>
       </AppLayout>
     )
@@ -208,8 +208,8 @@ export default function GmPage() {
     <AppLayout title="GM">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
         <PageInfo
-          en={'What is GM?\nA simple way to stay active every day. You send a GM, keep your streak, and build activity over time.\nSpreading activity matters more than doing everything in one day.'}
-          tr={'GM nedir?\nHer gün aktif kalmanı sağlayan basit bir sistem. GM gönderirsin, streak oluşur ve aktiviten zamanla birikir.\nHer şeyi tek günde yapmak yerine zamana yaymak daha önemlidir.'}
+          en={'Sending GM looks simple, but it helps you generate consistent daily transactions. Spreading activity over time matters more than doing everything in one day.'}
+          tr={'GM göndermek basit görünür ama aslında her gün TX yapmanı sağlar. Her şeyi tek günde yapmak yerine zamana yaymak daha önemlidir.'}
         />
 
         {/* Left column */}
@@ -242,7 +242,7 @@ export default function GmPage() {
               </div>
               <div style={{
                 fontSize: '13px', fontWeight: '700', fontFamily: 'monospace',
-                color: urgencyColor, background: '#0a0b0f', padding: '4px 10px',
+                color: urgencyColor, background: 'var(--bg-card2)', padding: '4px 10px',
                 borderRadius: '6px', border: `1px solid ${urgencyColor}44`,
               }}>
                 {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
@@ -252,7 +252,7 @@ export default function GmPage() {
 
           {/* No streak countdown */}
           {!data.gmmedToday && data.streak === 0 && (
-            <div style={{ fontSize: '11px', color: '#374151', textAlign: 'right' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>
               Streak resets in {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
             </div>
           )}
@@ -302,8 +302,8 @@ export default function GmPage() {
           </div>
 
           {/* Milestones */}
-          <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', padding: '14px 16px' }}>
-            <div style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>Milestones</div>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>Milestones</div>
             <MilestoneBar streak={data.streak} />
           </div>
 
@@ -348,25 +348,25 @@ export default function GmPage() {
             >
               {btnLabel}
             </button>
-            <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center', marginTop: '6px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '6px' }}>
               {btnHint}
             </div>
           </div>
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Total GMs</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: '#f1f5f9' }}>{data.totalGms}</div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Total GMs</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{data.totalGms}</div>
             </div>
             {userRank ? (
-              <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Your Rank</div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Your Rank</div>
                 <div style={{ fontSize: '20px', fontWeight: '700', color: '#fbbf24' }}>#{userRank.rank}</div>
               </div>
             ) : (
-              <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Resets in</div>
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Resets in</div>
                 <div style={{ fontSize: '16px', fontWeight: '700', color: urgencyColor, fontFamily: 'monospace' }}>
                   {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
                 </div>
@@ -379,12 +379,12 @@ export default function GmPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           {/* Leaderboard */}
-          <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1d27', fontSize: '12px', fontWeight: '700', color: '#d1d5db' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
               Leaderboard
             </div>
             {leaderboard.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#374151' }}>No scores yet — be first!</div>
+              <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>No scores yet — be first!</div>
             ) : leaderboard.map((entry) => {
               const isMe = entry.address === address?.toLowerCase()
               const label = isMe
@@ -393,11 +393,11 @@ export default function GmPage() {
               return (
                 <div key={entry.address} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '10px 16px', borderBottom: '1px solid #1a1d2744',
+                  padding: '10px 16px', borderBottom: '1px solid var(--border)',
                   background: isMe ? '#1e2a1e' : 'transparent',
                   borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
                 }}>
-                  <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: '#475569', minWidth: '20px', textAlign: 'center' }}>
+                  <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: 'var(--text-muted)', minWidth: '20px', textAlign: 'center' }}>
                     {entry.rank === 1 ? '\uD83E\uDD47' : entry.rank === 2 ? '\uD83E\uDD48' : entry.rank === 3 ? '\uD83E\uDD49' : `#${entry.rank}`}
                   </span>
                   <div style={{ flex: 1, fontSize: '12px', fontWeight: isMe ? '700' : '400', color: isMe ? '#4ade80' : '#94a3b8' }}>
@@ -411,13 +411,13 @@ export default function GmPage() {
 
           {/* Activity feed */}
           {feed.length > 0 && (
-            <div style={{ background: '#0f1117', border: '1px solid #1a1d27', borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a1d27', fontSize: '12px', fontWeight: '700', color: '#d1d5db' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
                 Recent GMs
               </div>
               {feed.slice(0, 5).map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid #1a1d2744' : 'none' }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace' }}>{item.address}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{item.address}</div>
                   <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `${item.streak}d` : 'GM'}</div>
                 </div>
               ))}
