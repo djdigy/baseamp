@@ -13,7 +13,19 @@ interface GmStatus    { streak: number; gmmedToday: boolean; score: number }
 interface ReferralStatus { totalReferrals: number; dailyEarnings: number }
 
 // ── Translations ─────────────────────────────────────────────────────────────
-const T = {
+type Translations = {
+  todayAction: string; sendGm: string; streakSecured: string; scoredAdded: string
+  comeBack: string; niceshowedUp: string; shareStreak: string; copied: string
+  youreOnStreak: string; dayStreak: string; progressing: string; plusScoreContinue: string
+  skipWarning: string; inviteFriends: string; startStreak: string; buildingConsistency: string
+  networkEarning: string; networkToday: string; referralWillEarn: string; invite1Friend: string
+  stats: string; actions: string; totalTx: string; onBase: string; activeDays: string
+  since: string; builderScore: string; gmScore: string; sendGmAction: string
+  dayStreakSecured: string; dailyStreak: string; daysTo: string; dayTo: string
+  bonus: string; keepGoingToReach: string
+}
+
+const T: Record<string, Translations> = {
   en: {
     todayAction:        "Today's action",
     sendGm:             'Send GM (+5 score)',
@@ -75,7 +87,7 @@ const T = {
     stats:              'İstatistikler',
     actions:            'Eylemler',
     totalTx:            'Toplam TX',
-    onBase:             'Base\'de',
+    onBase:             "Base'de",
     activeDays:         'Aktif Gün',
     since:              'tarihinden beri',
     builderScore:       'Builder Puanı',
@@ -88,8 +100,8 @@ const T = {
     bonus:              'bonus',
     keepGoingToReach:   'Ulaşmak için devam et:',
   },
-} as const
-type Lang = keyof typeof T
+}
+type Lang = 'en' | 'tr'
 
 
 
