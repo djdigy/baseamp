@@ -78,11 +78,11 @@ function VaultRow({ vault }: { vault: Vault }) {
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>TVL</div>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>${vault.tvl}M</div>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>{vault.tvl !== '—' ? `$${vault.tvl}M` : '—'}</div>
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '70px' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>APY</div>
-          <div style={{ fontSize: '18px', fontWeight: '800', color: parseFloat(vault.apy) > 0 ? '#22c55e' : '#475569' }}>{vault.apy}%</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '2px' }}>Est. APY</div>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: parseFloat(vault.apy) > 0 ? '#22c55e' : 'var(--text-faint)' }}>{vault.apy !== '0.0' ? `${vault.apy}%` : '—'}</div>
         </div>
         <div style={{ fontSize: '14px', color: 'var(--text-faint)', flexShrink: 0 }}>↗</div>
       </div>
@@ -175,7 +175,7 @@ export default function EarnPage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
           {[
-            { label: 'Best APY', value: loading ? '...' : `${bestApy}%`, color: '#22c55e' },
+            { label: 'Best Est. APY', value: loading ? '...' : `${bestApy}%`, color: '#22c55e' },
             { label: 'Total TVL', value: loading ? '...' : totalTvl === '—' ? '—' : `$${totalTvl}M`, color: '#60a5fa' },
             { label: 'Vaults', value: loading ? '...' : filtered.length.toString(), color: '#f97316' },
           ].map((s, i) => (
@@ -200,7 +200,7 @@ export default function EarnPage() {
               {loading ? 'Loading vaults...' : `${filtered.length} vaults`}
             </div>
             <div style={{ fontSize: '10px', color: source === 'live' ? '#22c55e' : '#94a3b8' }}>
-              {source === 'live' ? '🟢 Live data' : '📊 Cached data'}
+              {source === 'live' ? '🟢 Live APY' : '⚠️ Estimated APY'}
             </div>
           </div>
           {loading ? (
@@ -209,7 +209,7 @@ export default function EarnPage() {
         </div>
 
         <div style={{ fontSize: '11px', color: 'var(--text-faint)', lineHeight: '1.6' }}>
-          ⚠️ APY rates are variable. Always do your own research. BaseAmp does not take any fees on deposits.
+          ⚠️ APY values are estimates from live data when available, or cached values as fallback. Rates are variable. Always verify on the protocol page.
         </div>
       </div>
     </AppLayout>

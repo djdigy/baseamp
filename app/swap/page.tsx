@@ -130,6 +130,47 @@ export default function SwapPage() {
           </div>
         </div>
 
+        {/* Bridge section — ABOVE DEX list */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+            <div style={{ width: '3px', height: '18px', background: '#f97316', borderRadius: '2px' }} />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                {lang === 'tr' ? 'Köprü (Bridge)' : 'Bridge Assets'}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                {lang === 'tr'
+                  ? "Ethereum'dan Base'e varlık köprüle — farklı günlerde yap"
+                  : 'Bridge assets from Ethereum to Base — do this across different days'}
+              </div>
+            </div>
+          </div>
+          <a href="https://superbridge.app" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <div style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: '12px', padding: '14px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              cursor: 'pointer', transition: 'border-color 0.15s',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#f97316')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f9731622', border: '1px solid #f9731644', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                  🌉
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Superbridge</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    {lang === 'tr' ? 'Ethereum ↔ Base resmi köprü' : 'Official Ethereum ↔ Base bridge'}
+                  </div>
+                </div>
+              </div>
+              <span style={{ fontSize: '14px', color: 'var(--text-faint)' }}>↗</span>
+            </div>
+          </a>
+        </div>
+
         {/* DEX kategorileri */}
         {categories.map(cat => {
           const items = DEXES.filter(d => d.category === cat)

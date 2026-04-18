@@ -154,7 +154,6 @@ export default function DashboardPage() {
               const title  = lang === 'tr' ? step.tr_title : step.en_title
               const sub    = lang === 'tr' ? step.tr_sub   : step.en_sub
               const cta    = lang === 'tr' ? step.tr_cta   : step.en_cta
-              const isStep2 = step.doneKey === 'swap'
 
               return (
                 <div key={step.doneKey} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -173,13 +172,6 @@ export default function DashboardPage() {
                       <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '600' }}>{cta}</div>
                     </div>
                   </Link>
-                  {/* Step 2: extra bridge link */}
-                  {isStep2 && (
-                    <a href="https://superbridge.app" target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'block', textDecoration: 'none', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#60a5fa', fontWeight: '600', textAlign: 'center' }}>
-                      Bridge &#8599; Superbridge
-                    </a>
-                  )}
                 </div>
               )
             })}
