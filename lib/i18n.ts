@@ -46,9 +46,9 @@ export const TEXT = {
       'Tam anlamıyla nitelendirilebilmek için AYRICA:'
     ),
     guideExternal: [
-      { en: 'Install BaseApp — connect your wallet to the official Base app', tr: 'BaseApp kur — resmi Base uygulamasına cüzdanını bağla', url: 'https://base.org/app' },
+      { en: 'Install BaseApp — connect your wallet to the official Base app', tr: 'BaseApp kur — resmi Base uygulamasına cüzdanını bağla', url: 'https://base.app/invite/cihan0xeth/XFFDZL1D' },
       { en: 'Join Guild — connect ALL your wallets and social accounts', tr: "Guild'e katıl — tüm cüzdan ve hesaplarını bağla (kritik)", url: 'https://guild.xyz/base' },
-      { en: 'Use Farcaster — post, interact, build social presence', tr: 'Farcaster kullan — paylaş, etkileş, sosyal varlık oluştur', url: 'https://farcaster.xyz' },
+      { en: 'Use Farcaster — post, interact, build social presence', tr: 'Farcaster kullan — paylaş, etkileş, sosyal varlık oluştur', url: 'https://farcaster.xyz/~/code/7BSPLN' },
       { en: 'Get a Base Name — your permanent identity on Base', tr: "Base Name al — Base'teki kalıcı kimliğin", url: 'https://www.base.org/names' },
     ],
     guideWarning: t(

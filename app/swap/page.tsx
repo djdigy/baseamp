@@ -55,11 +55,15 @@ function getCategoryLabels(lang: 'en' | 'tr') {
 
 function DexCard({ dex }: { dex: Dex }) {
   const cat = { color: CATEGORY_COLORS[dex.category] }
+  function track() {
+    try { fetch('/api/track', { method: 'POST', body: JSON.stringify({ event: 'dex_click', dex: dex.name }) }) } catch (_) {}
+  }
   return (
     <a
       href={dex.url}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={track}
       style={{ textDecoration: 'none' }}
     >
       <div style={{
@@ -132,20 +136,22 @@ export default function SwapPage() {
 
         {/* Bridge section — ABOVE DEX list */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
             <div style={{ width: '3px', height: '18px', background: '#f97316', borderRadius: '2px' }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                {lang === 'tr' ? 'Köprü (Bridge)' : 'Bridge Assets'}
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                {lang === 'tr'
-                  ? "Ethereum'dan Base'e varlık köprüle — farklı günlerde yap"
-                  : 'Bridge assets from Ethereum to Base — do this across different days'}
+                {lang === 'tr' ? 'Köprü (Bridge) — Buradan başla ↓' : 'Bridge Assets — Start here if you are new ↓'}
               </div>
             </div>
           </div>
-          <a href="https://superbridge.app" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '8px', paddingLeft: '13px' }}>
+            {lang === 'tr'
+              ? "Bu, airdrop uygunluğu için en güçlü sinyallerden biridir. Ethereum'dan Base'e farklı günlerde köprüle — hepsini aynı anda değil. Köprülemeyi atlarsan aktiviten eksik görünebilir."
+              : "This is one of the strongest signals for airdrop eligibility. Bridge from Ethereum to Base across different days — not all at once. If you skip bridging, your activity may look incomplete."}
+          </div>
+          <a href="https://superbridge.app" target="_blank" rel="noopener noreferrer"
+            onClick={() => { try { fetch('/api/track', { method: 'POST', body: JSON.stringify({ event: 'superbridge_click' }) }) } catch (_) {} }}
+            style={{ textDecoration: 'none' }}>
             <div style={{
               background: 'var(--bg-card)', border: '1px solid var(--border)',
               borderRadius: '12px', padding: '14px 16px',
@@ -162,7 +168,9 @@ export default function SwapPage() {
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Superbridge</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {lang === 'tr' ? 'Ethereum ↔ Base resmi köprü' : 'Official Ethereum ↔ Base bridge'}
+                    {lang === 'tr'
+                      ? 'Bridge yap → ilk gerçek aktivite sinyalini oluştur'
+                      : 'Bridge now → build your first real activity signal'}
                   </div>
                 </div>
               </div>
@@ -172,6 +180,11 @@ export default function SwapPage() {
         </div>
 
         {/* DEX kategorileri */}
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6', padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px' }}>
+          {lang === 'tr'
+            ? 'Farklı günlerde birden fazla DEX kullan — tek platform zayıf sinyal. Swaplarını zamana yay, hacim değil süreklilik önemli.'
+            : 'Use multiple DEXs across different days — using only one platform is a weak signal. Spread your swaps over time — consistency beats volume.'}
+        </div>
         {categories.map(cat => {
           const items = DEXES.filter(d => d.category === cat)
           const info = categoryLabels[cat]
@@ -183,11 +196,7 @@ export default function SwapPage() {
                   <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>{info.label}</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{info.desc}</div>
                 </div>
-                <div style={{
-                  marginLeft: 'auto', fontSize: '10px',
-                  background: 'var(--bg-card2)', color: 'var(--text-faint)',
-                  padding: '2px 8px', borderRadius: '99px',
-                }}>
+                <div style={{ marginLeft: 'auto', fontSize: '10px', background: 'var(--bg-card2)', color: 'var(--text-faint)', padding: '2px 8px', borderRadius: '99px' }}>
                   {items.length} {tx(s.platforms, lang)}
                 </div>
               </div>
@@ -198,8 +207,10 @@ export default function SwapPage() {
           )
         })}
 
-        <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'center', padding: '8px 0' }}>
-          
+        <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'center', padding: '8px 0', lineHeight: '1.6' }}>
+          {lang === 'tr'
+            ? 'İyi başlangıç — yarın başka bir DEX kullan. Dış platformlarda builder code taşınmaz.'
+            : 'Good start — now use another DEX tomorrow. External swaps do not carry builder code.'}
         </div>
       </div>
     </AppLayout>

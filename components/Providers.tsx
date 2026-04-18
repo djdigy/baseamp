@@ -2,8 +2,10 @@
 
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RainbowKitProvider, darkTheme, lightTheme } from '@rainbow-me/rainbowkit'
 import { type ReactNode, useState, useEffect, createContext, useContext } from 'react'
 import { config } from '@/lib/wagmi'
+import '@rainbow-me/rainbowkit/styles.css'
 
 // ── Language Context ──────────────────────────────────────────────────────────
 type Lang = 'en' | 'tr'
@@ -30,14 +32,41 @@ function LangProvider({ children }: { children: ReactNode }) {
   return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>
 }
 
+// ── Theme awareness for RainbowKit ────────────────────────────────────────────
+function RainbowThemeWrapper({ children }: { children: ReactNode }) {
+  const [isDark, setIsDark] = useState(true)
+
+  useEffect(() => {
+    const check = () => {
+      try { setIsDark(localStorage.getItem('ba_theme') !== 'light') } catch (_) {}
+    }
+    check()
+    window.addEventListener('storage', check)
+    return () => window.removeEventListener('storage', check)
+  }, [])
+
+  return (
+    <RainbowKitProvider
+      theme={isDark
+        ? darkTheme({ accentColor: '#3b82f6', accentColorForeground: 'white', borderRadius: 'medium' })
+        : lightTheme({ accentColor: '#3b82f6', accentColorForeground: 'white', borderRadius: 'medium' })
+      }
+    >
+      {children}
+    </RainbowKitProvider>
+  )
+}
+
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <LangProvider>
-          {children}
-        </LangProvider>
+        <RainbowThemeWrapper>
+          <LangProvider>
+            {children}
+          </LangProvider>
+        </RainbowThemeWrapper>
       </QueryClientProvider>
     </WagmiProvider>
   )
