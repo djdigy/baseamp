@@ -17,58 +17,89 @@ export const TEXT = {
   dashboard: {
     welcome:     t('Welcome to BaseAmp', "BaseAmp'a Ho\u015f Geldin"),
     welcomeSub:  t('Connect your wallet to start.', "Ba\u015flamak i\u00e7in c\xfczdan\u0131n\u0131 ba\u011fla."),
-    // Airdrop guide
-    guideTitle:      t('Airdrop Guide', 'Airdrop Rehberi'),
-    guideIntro:      t(
-      'What matters on Base is not doing everything at once, but spreading activity over time. Follow the steps below on BaseAmp 👇',
-      "Base'te \u00f6nemli olan tek seferde \u00e7ok i\u015flem yapmak de\u011fil, bunu zamana yaymakt\u0131r. A\u015fa\u011f\u0131daki ad\u0131mlar\u0131 BaseAmp \xfczerinden takip edebilirsin 👇"
+
+    // Airdrop Guide — full content
+    guideTitle: t('Airdrop Guide', 'Airdrop Rehberi'),
+
+    // Theory block — why you are here
+    guideWhy: t(
+      'Base is not just a blockchain — it is an ecosystem. Airdrops on Base reward wallets that show real, consistent usage over time. Not bots. Not spam. Real people using real apps.',
+      "Base sadece bir blockchain de\u011fil, bir ekosistem. Base'teki airdrop'lar ger\u00e7ek ve d\u00fczzenli kullan\u0131m g\xf6steren c\xfczdanlar\u0131 ödl\xfcllendirir. Bot de\u011fil, spam de\u011fil. Ger\u00e7ek insanlar, ger\u00e7ek kullan\u0131m."
     ),
-    guideWarning:    t(
-      '\u26d4 These steps alone are not enough. To be visible in the Base ecosystem, you should also:',
-      '\u26d4 Bu ad\u0131mlar tek ba\u015f\u0131na yeterli de\u011fil. Base ekosisteminde g\xf6r\xfcn\xfcr olmak i\u00e7in ayr\u0131ca:'
+    guidePrinciple1: t(
+      'Activity spread over many days is worth more than 100 transactions in one day.',
+      'Pek çok g\xfcne yay\u0131lan aktivite, tek g\xfcnde 100 i\u015flem yapmaktan daha de\u011ferlidir.'
+    ),
+    guidePrinciple2: t(
+      'You need both onchain presence (transactions, contracts, DeFi) and social presence (Farcaster, Base Name, Guild).',
+      'Hem onchain varl\u0131k (i\u015flemler, kontratlar, DeFi) hem de sosyal varl\u0131k (Farcaster, Base Name, Guild) gereklidir.'
+    ),
+    guidePrinciple3: t(
+      'Variety matters. Using different apps across different days looks like a real user.',
+      'Farkl\u0131l\u0131k önemlidir. Farkl\u0131 g\xfcnlerde farkl\u0131 uygulamalar kullanmak ger\u00e7ek kullan\u0131c\u0131 gibi g\xf6r\xfcnd\xfcr\xfcr.'
+    ),
+    guideCta: t(
+      'Follow the steps below to build your activity ↓',
+      'Aktiviteni olu\u015fturmak i\u00e7in a\u015fa\u011f\u0131daki ad\u0131mlar\u0131 takip et ↓'
+    ),
+
+    // Bridge between guide and steps
+    stepsIntro: t(
+      'These 5 steps are your core activity loop. Do them regularly, not all at once.',
+      'Bu 5 ad\u0131m temel aktivite d\xf6ng\xfcn\xfcd\xfcr. Hepsini ayn\u0131 anda de\u011fil, d\xfczzenli olarak yap.'
+    ),
+
+    // External actions block
+    guideExternalTitle: t(
+      'To maximize your airdrop potential, you also need:',
+      'Airdrop potansiyelini en \xfcst d\xfczeye \u00e7\u0131karmak i\u00e7in ayr\u0131ca:'
     ),
     guideExternal: [
-      { en: 'Install BaseApp', tr: "BaseApp kur", url: 'https://base.org/app' },
-      { en: 'Join Guild', tr: "Guild'e kat\u0131l", url: 'https://guild.xyz/base' },
-      { en: 'Use Farcaster', tr: 'Farcaster kullan', url: 'https://farcaster.xyz' },
-      { en: 'Get a Base Name', tr: 'Base Name al', url: 'https://www.base.org/names' },
+      { en: 'Install BaseApp — connect your wallet to the official Base app', tr: "BaseApp kur \u2014 resmi Base uygulamas\u0131na c\xfczdan\u0131n\u0131 ba\u011fla", url: 'https://base.org/app' },
+      { en: "Join Guild — connect ALL your wallets and social accounts", tr: "Guild'e kat\u0131l \u2014 t\xfcm c\xfczdanlar\u0131n\u0131 ve hesaplar\u0131n\u0131 ba\u011fla", url: 'https://guild.xyz/base' },
+      { en: 'Use Farcaster — post, interact, build social presence', tr: 'Farcaster kullan \u2014 payla\u015f, etkile\u015f, sosyal varl\u0131k olu\u015ftur', url: 'https://farcaster.xyz' },
+      { en: 'Get a Base Name — your identity on Base', tr: "Base Name al \u2014 Base'teki kimli\u011fin", url: 'https://www.base.org/names' },
     ],
     guideNote: t(
-      'These actions are outside BaseAmp but critical for airdrop signals.',
-      'Bu ad\u0131mlar BaseAmp d\u0131\u015f\u0131nda yap\u0131l\u0131r, ancak airdrop i\u00e7in kritik sinyallerdir.'
+      'These actions happen outside BaseAmp but are critical airdrop signals.',
+      'Bu ad\u0131mlar BaseAmp d\u0131\u015f\u0131nda yap\u0131l\u0131r, ancak kritik airdrop sinyalleridir.'
     ),
+
     // Step flow
     steps: [
-      { n: '1', en_title: 'Send GM',       tr_title: 'GM G\u00f6nder',  en_sub: 'Daily transaction',        tr_sub: 'G\xfcnl\xfck i\u015flem',          href: '/gm',       doneKey: 'gm' },
-      { n: '2', en_title: 'Swap / Bridge', tr_title: 'Swap / Bridge',   en_sub: 'Use DEXs or bridge assets', tr_sub: 'DEX veya k\xf6pr\xfc kullan',  href: '/swap',     doneKey: 'swap' },
-      { n: '3', en_title: 'Earn',          tr_title: 'Kazan',           en_sub: 'Deposit into DeFi',         tr_sub: "DeFi'ye yat\u0131r",            href: '/earn',     doneKey: 'earn' },
-      { n: '4', en_title: 'Deploy',        tr_title: 'Deploy',          en_sub: 'Create a contract',         tr_sub: 'Kontrat olu\u015ftur',           href: '/deploy',   doneKey: 'deploy' },
-      { n: '5', en_title: 'Invite',        tr_title: 'Davet Et',        en_sub: 'Earn 10% commission',       tr_sub: '%10 komisyon kazan',            href: '#referral', doneKey: 'invite' },
+      { n: '1', en_title: 'Send GM',       tr_title: 'GM Gönder',    en_sub: 'Daily transaction — do this every day',           tr_sub: 'Günlük işlem \u2014 her g\xfcn yap',                   href: '/gm',     doneKey: 'gm' },
+      { n: '2', en_title: 'Swap / Bridge', tr_title: 'Swap / Bridge',     en_sub: 'Use DEXs and bridge assets across different days', tr_sub: 'DEX kullan ve varl\u0131klar\u0131 farkl\u0131 g\xfcnlerde köprüle',  href: '/swap',   doneKey: 'swap' },
+      { n: '3', en_title: 'Earn',          tr_title: 'Kazan',             en_sub: 'Deposit into DeFi — show capital interaction',    tr_sub: "DeFi'ye yat\u0131r \u2014 sermaye kullan\u0131m\u0131 g\xf6ster",     href: '/earn',   doneKey: 'earn' },
+      { n: '4', en_title: 'Deploy',        tr_title: 'Deploy',            en_sub: 'Create a contract — deepest on-chain signal',     tr_sub: 'Kontrat olu\u015ftur \u2014 en derin onchain sinyal',              href: '/deploy', doneKey: 'deploy' },
+      { n: '5', en_title: 'Invite',        tr_title: 'Davet Et',          en_sub: 'Grow your network, earn 10% commission',          tr_sub: 'A\u011f\u0131n\u0131 b\xfcy\xfct, %10 komisyon kazan',           href: '#referral',doneKey: 'invite' },
     ],
+
     // Analytics section
-    analyticsTitle:   t('Wallet Analytics', 'Cüzdan Analizi'),
-    totalTx:          t('Total TX', 'Toplam TX'),
-    activeDays:       t('Active Days', 'Aktif Gün'),
-    lastActivity:     t('Last Activity', 'Son Aktivite'),
-    currentStreak:    t('Current Streak', 'Mevcut Seri'),
-    uniqueContracts:  t('Unique Contracts', 'Benzersiz Kontrat'),
-    gasUsed:          t('Gas (ETH)', 'Gas (ETH)'),
-    walletAge:        t('Wallet Age', 'Cüzdan Yaşı'),
-    builderScore:     t('Builder Score', 'Builder Puanı'),
-    gmScore:          t('GM Score', 'GM Puanı'),
+    analyticsTitle:  t('Your Activity', 'Aktiviten'),
+    totalTx:         t('Total TX', 'Toplam TX'),
+    activeDays:      t('Active Days', 'Aktif Gün'),
+    lastActivity:    t('Last Activity', 'Son Aktivite'),
+    currentStreak:   t('Current Streak', 'Mevcut Seri'),
+    uniqueContracts: t('Unique Contracts', 'Benzersiz Kontrat'),
+    gasUsed:         t('Gas (ETH)', 'Gas (ETH)'),
+    walletAge:       t('Wallet Age', 'Cüzdan Yaşı'),
+    builderScore:    t('Builder Score', 'Builder Puanı'),
+    gmScore:         t('GM Score', 'GM Puanı'),
+
     // Referral section
-    referralTitle:    t('Referral', 'Referral'),
-    referralCta:      t("Earn 10% from your referrals' transaction fees.", "Davet etti\u011fin kullan\u0131c\u0131lar\u0131n yapt\u0131\u011f\u0131 i\u015flemlerden %10 komisyon kazan\u0131rs\u0131n."),
-    totalReferrals:   t('Referrals', 'Referanslar'),
-    earnedEth:        t('Earned (ETH)', 'Kazanılan (ETH)'),
-    todayScore:       t('Today Score', 'Bugün Puan'),
-    commission:       t('Commission', 'Komisyon'),
-    noReferrals:      t('No referrals yet', 'Henüz referans yok'),
-    noReferralsSub:   t('Share your link to start earning.', 'Kazanmaya başlamak için linkini paylaş.'),
-    // Hero / footer
-    hero:        t(
-      "Spreading activity over time matters more than doing everything in one day.",
-      "Aktiviteni zamana yaymak, hepsini tek g\xfcnde yapmaktan daha de\u011ferlidir."
+    referralTitle:   t('Referral', 'Referral'),
+    referralCta:     t('Earn 10% from your referrals\' transaction fees.', 'Davet etti\u011fin kullan\u0131c\u0131lar\u0131n yapt\u0131\u011f\u0131 i\u015flemlerden %10 komisyon kazan\u0131rs\u0131n.'),
+    totalReferrals:  t('Referrals', 'Referanslar'),
+    earnedEth:       t('Earned (ETH)', 'Kazan\u0131lan (ETH)'),
+    todayScore:      t('Today Score', 'Bugün Puan'),
+    commission:      t('Commission', 'Komisyon'),
+    noReferrals:     t('No referrals yet', 'Henüz referans yok'),
+    noReferralsSub:  t('Share your link to start earning.', 'Kazanmaya ba\u015flamak i\u00e7in linkini payla\u015f.'),
+
+    // Hero
+    hero: t(
+      'Spreading activity over time matters more than doing everything in one day.',
+      'Aktiviteni zamana yaymak, hepsini tek günde yapmaktan daha de\u011ferlidir.'
     ),
   },
   gm: {
