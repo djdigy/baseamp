@@ -13,7 +13,7 @@ interface WalletStats {
   currentStreak: number; gasEth: number; lastActivity: string | null
   firstActivity: string | null; walletAge: number; builderScore: number
 }
-interface GmStatus   { streak: number; gmmedToday: boolean; score: number }
+interface GmStatus    { streak: number; gmmedToday: boolean; score: number }
 interface ReferralData {
   code: string; referralLink: string
   totalReferrals: number; totalEarned: string; dailyEarnings: number
@@ -29,17 +29,13 @@ function AnalyticCard({ label, value, sub }: { label: string; value: string; sub
   )
 }
 
-function Dot() {
-  return <span style={{ display: 'inline-block', width: '5px', height: '5px', borderRadius: '50%', background: '#3b82f6', marginRight: '8px', flexShrink: 0, marginTop: '5px' }} />
-}
-
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
   const { lang } = useLang()
-  const [stats, setStats]     = useState<WalletStats | null>(null)
-  const [gmStatus, setGmStatus] = useState<GmStatus | null>(null)
-  const [referral, setReferral] = useState<ReferralData | null>(null)
-  const [loading, setLoading]   = useState(false)
+  const [stats, setStats]         = useState<WalletStats | null>(null)
+  const [gmStatus, setGmStatus]   = useState<GmStatus | null>(null)
+  const [referral, setReferral]   = useState<ReferralData | null>(null)
+  const [loading, setLoading]     = useState(false)
   const [refCopied, setRefCopied] = useState(false)
 
   const d = TEXT.dashboard
@@ -96,34 +92,56 @@ export default function DashboardPage() {
   const V = (v: number | null | undefined) =>
     loading ? '...' : v != null ? String(v) : '\u2014'
 
+  const principles = [d.guidePrinciple1, d.guidePrinciple2, d.guidePrinciple3] as const
+
   return (
     <AppLayout title="Dashboard">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* ── 1. AIRDROP GUIDE ─────────────────────────────────────────── */}
+        {/* ── 1. AIRDROP GUIDE (always visible, full onboarding block) ── */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px 22px' }}>
 
-          {/* Header */}
           <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '14px', letterSpacing: '-0.3px' }}>
             {tx(d.guideTitle, lang)}
           </div>
 
-          {/* Why you are here */}
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.75', marginBottom: '16px' }}>
+          {/* Core message */}
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.8', marginBottom: '14px' }}>
             {tx(d.guideWhy, lang)}
           </div>
 
-          {/* 3 principles */}
+          {/* Principles */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
-            {([d.guidePrinciple1, d.guidePrinciple2, d.guidePrinciple3] as const).map((p, i) => (
+            {principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <Dot />
+                <span style={{ color: '#3b82f6', fontWeight: '700', fontSize: '12px', flexShrink: 0, marginTop: '2px' }}>{i + 1}.</span>
                 <span style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{tx(p, lang)}</span>
               </div>
             ))}
           </div>
 
-          {/* CTA — transition to steps */}
+          {/* External actions — core, not secondary */}
+          <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
+              {tx(d.guideExternalTitle, lang)}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+              {d.guideExternal.map((item, i) => (
+                <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', textDecoration: 'none' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-faint)', flexShrink: 0, marginTop: '2px' }}>{i + 1}.</span>
+                  <span style={{ fontSize: '12px', color: '#60a5fa', lineHeight: '1.5' }}>
+                    {lang === 'tr' ? item.tr : item.en} \u2197
+                  </span>
+                </a>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600' }}>
+              {tx(d.guideWarning, lang)}
+            </div>
+          </div>
+
+          {/* CTA — transitions to steps */}
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
             {tx(d.guideCta, lang)}
           </div>
@@ -131,11 +149,9 @@ export default function DashboardPage() {
 
         {/* ── 2. STEP FLOW ─────────────────────────────────────────────── */}
         <div>
-          {/* Bridge sentence */}
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600' }}>
             {tx(d.stepsIntro, lang)}
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
             {d.steps.map(step => {
               const isDone = done[step.doneKey]
@@ -167,9 +183,9 @@ export default function DashboardPage() {
             {tx(d.analyticsTitle, lang)}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
-            <AnalyticCard label={tx(d.totalTx, lang)}         value={V(stats?.txCount)}         sub={tx(c.onBase, lang)} />
-            <AnalyticCard label={tx(d.activeDays, lang)}      value={V(stats?.activeDays)}      sub={stats?.walletAge ? `${stats.walletAge} ${tx(c.days, lang)} ${tx(c.since, lang)}` : undefined} />
-            <AnalyticCard label={tx(d.currentStreak, lang)}   value={V(stats?.currentStreak)}   sub={tx(c.dayStreak, lang)} />
+            <AnalyticCard label={tx(d.totalTx, lang)}         value={V(stats?.txCount)}        sub={tx(c.onBase, lang)} />
+            <AnalyticCard label={tx(d.activeDays, lang)}      value={V(stats?.activeDays)}     sub={stats?.walletAge ? `${stats.walletAge} ${tx(c.days, lang)} ${tx(c.since, lang)}` : undefined} />
+            <AnalyticCard label={tx(d.currentStreak, lang)}   value={V(stats?.currentStreak)}  sub={tx(c.dayStreak, lang)} />
             <AnalyticCard label={tx(d.uniqueContracts, lang)} value={V(stats?.uniqueContracts)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
@@ -190,12 +206,12 @@ export default function DashboardPage() {
           </div>
           {referral && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '12px' }}>
-              {[
+              {([
                 { label: tx(d.totalReferrals, lang), value: referral.totalReferrals.toString(), color: '#60a5fa' },
                 { label: tx(d.earnedEth, lang),      value: referral.totalEarned,               color: '#22c55e' },
                 { label: tx(d.todayScore, lang),     value: referral.dailyEarnings > 0 ? `+${referral.dailyEarnings}` : '0', color: '#f97316' },
                 { label: tx(d.commission, lang),     value: '10%',                              color: '#8b5cf6' },
-              ].map((item, i) => (
+              ]).map((item, i) => (
                 <div key={i} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
                   <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{item.label}</div>
                   <div style={{ fontSize: '16px', fontWeight: '700', color: item.color }}>{item.value}</div>
@@ -225,37 +241,12 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* ── 5. EXTERNAL ACTIONS ──────────────────────────────────────── */}
-        <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 18px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>
-            {tx(d.guideExternalTitle, lang)}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {d.guideExternal.map((item, i) => (
-              <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', textDecoration: 'none' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '2px', flexShrink: 0 }}>{i + 1}.</span>
-                <div>
-                  <span style={{ fontSize: '13px', color: '#60a5fa', fontWeight: '600' }}>
-                    {lang === 'tr' ? item.tr : item.en}
-                  </span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginLeft: '6px' }}>\u2197</span>
-                </div>
-              </a>
-            ))}
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border)', fontStyle: 'italic' }}>
-            {tx(d.guideNote, lang)}
-          </div>
-        </div>
-
-        {/* ── 6. WALLET ────────────────────────────────────────────────── */}
+        {/* ── 5. WALLET ────────────────────────────────────────────────── */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{address?.slice(0, 8)}\u2026{address?.slice(-6)}</div>
-            {streak > 0 && (
-              <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600' }}>{streak} {tx(c.dayStreak, lang)}{milestone ? ` \u2014 ${milestone.daysLeft}d to Day ${milestone.day}` : ''}</div>
-            )}
-            {gmmedToday && <div style={{ fontSize: '11px', color: '#4ade80' }}>\u2713 GM today</div>}
+            {streak > 0 && <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600' }}>{streak} {tx(c.dayStreak, lang)}{milestone ? ` \u2014 ${milestone.daysLeft}d to Day ${milestone.day}` : ''}</div>}
+            {gmmedToday && <div style={{ fontSize: '11px', color: '#4ade80' }}>\u2713 GM</div>}
           </div>
           <a href={`https://basescan.org/address/${address}`} target="_blank" rel="noopener noreferrer"
             style={{ fontSize: '12px', color: '#60a5fa', textDecoration: 'none', padding: '5px 10px', background: 'var(--bg-card2)', borderRadius: '6px', border: '1px solid var(--border)' }}>
