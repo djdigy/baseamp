@@ -3,17 +3,12 @@
 import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState(false)  // light by default
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('ba_theme')
-      if (saved) {
-        setIsDark(saved === 'dark')
-      } else {
-        // Fall back to system preference
-        setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
-      }
+      setIsDark(saved === 'dark')
     } catch (_) {}
   }, [])
 

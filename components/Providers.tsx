@@ -68,11 +68,11 @@ function BaseAppAutoConnect() {
 
 // ── Theme wrapper ─────────────────────────────────────────────────────────────
 function RainbowThemeWrapper({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState(false)  // light by default
 
   useEffect(() => {
     const check = () => {
-      try { setIsDark(localStorage.getItem('ba_theme') !== 'light') } catch (_) {}
+      try { setIsDark(localStorage.getItem('ba_theme') === 'dark') } catch (_) {}
     }
     check()
     window.addEventListener('storage', check)

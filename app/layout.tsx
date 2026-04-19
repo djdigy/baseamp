@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   },
 }
 
-// Runs before paint: uses saved pref or falls back to system preference
-const themeScript = `(function(){try{var s=localStorage.getItem('ba_theme');if(s){document.documentElement.classList.toggle('light',s==='light')}else{var dark=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('light',!dark)}}catch(e){}})()`
+// Theme: light by default, dark only if user explicitly set it or system prefers dark
+const themeScript = `(function(){try{var s=localStorage.getItem('ba_theme');if(s==='dark'){document.documentElement.classList.remove('light')}else if(s==='light'){document.documentElement.classList.add('light')}else{document.documentElement.classList.add('light')}}catch(e){document.documentElement.classList.add('light')}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
