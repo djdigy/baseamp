@@ -20,21 +20,21 @@ interface Vault {
 
 // Gerçek Morpho Base vault'ları - doğru adres ve URL'ler
 const MORPHO_FALLBACK: Vault[] = [
-  { protocol: 'Morpho', name: 'Moonwell Frontier cbBTC', address: '0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796', asset: 'cbBTC', apy: '0.0', tvl: '95', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796/mwcbbtc', isBtc: true, isV2: false },
-  { protocol: 'Morpho', name: 'Re7 USDC', address: '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e', asset: 'USDC', apy: '7.7', tvl: '30', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e/re7usdc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Clearstar USDC Reactor', address: '0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657', asset: 'USDC', apy: '5.4', tvl: '25', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657/csusdc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Steakhouse High Yield USDC', address: '0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F', asset: 'USDC', apy: '5.1', tvl: '40', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F/bbqusdc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Steakhouse Prime USDC', address: '0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2', asset: 'USDC', apy: '4.3', tvl: '50', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2/steakusdc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Gauntlet USDC Prime', address: '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61', asset: 'USDC', apy: '4.3', tvl: '20', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61/gtUSDCp', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Moonwell Flagship USDC', address: '0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca', asset: 'USDC', apy: '4.3', tvl: '22', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca/mwusdc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Gauntlet WETH Core', address: '0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844', asset: 'WETH', apy: '1.9', tvl: '45', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844/gtwethc', isBtc: false, isV2: false },
-  { protocol: 'Morpho', name: 'Moonwell Flagship ETH', address: '0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1', asset: 'WETH', apy: '1.7', tvl: '67', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1/mweth', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Moonwell Frontier cbBTC', address: '0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796', asset: 'cbBTC', apy: '—', tvl: '95', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x543257eF2161176D7C8cD90BA65C2d4CaEF5a796/mwcbbtc', isBtc: true, isV2: false },
+  { protocol: 'Morpho', name: 'Re7 USDC', address: '0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e', asset: 'USDC', apy: '—', tvl: '30', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x12AFDeFb2237a5963e7BAb3e2D46ad0eee70406e/re7usdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Clearstar USDC Reactor', address: '0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657', asset: 'USDC', apy: '—', tvl: '25', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x1D3b1Cd0a0f242d598834b3F2d126dC6bd774657/csusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Steakhouse High Yield USDC', address: '0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F', asset: 'USDC', apy: '—', tvl: '40', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFA7B88064FeEF0cEe02AAeBBd95D30df3878F/bbqusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Steakhouse Prime USDC', address: '0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2', asset: 'USDC', apy: '—', tvl: '50', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xBEEFE94c8aD530842bfE7d8B397938fFc1cb83b2/steakusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Gauntlet USDC Prime', address: '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61', asset: 'USDC', apy: '—', tvl: '20', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61/gtUSDCp', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Moonwell Flagship USDC', address: '0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca', asset: 'USDC', apy: '—', tvl: '22', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xc1256Ae5FF1cf2719D4937adb3bbCCab2E00A2Ca/mwusdc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Gauntlet WETH Core', address: '0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844', asset: 'WETH', apy: '—', tvl: '45', chain: 'Base', url: 'https://app.morpho.org/base/vault/0x6b13c060F13Af1fdB319F52315BbbF3fb1D88844/gtwethc', isBtc: false, isV2: false },
+  { protocol: 'Morpho', name: 'Moonwell Flagship ETH', address: '0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1', asset: 'WETH', apy: '—', tvl: '67', chain: 'Base', url: 'https://app.morpho.org/base/vault/0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1/mweth', isBtc: false, isV2: false },
 ]
 
 const AAVE_VAULTS: Vault[] = [
-  { protocol: 'Aave', name: 'Aave USDC Supply', address: '0x', asset: 'USDC', apy: '4.80', tvl: '210', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
-  { protocol: 'Aave', name: 'Aave ETH Supply', address: '0x', asset: 'WETH', apy: '2.10', tvl: '180', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
-  { protocol: 'Aave', name: 'Aave cbBTC Supply', address: '0x', asset: 'cbBTC', apy: '0.50', tvl: '95', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: true, isV2: false },
+  { protocol: 'Aave', name: 'Aave USDC Supply', address: '0x', asset: 'USDC', apy: '—', tvl: '210', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
+  { protocol: 'Aave', name: 'Aave ETH Supply', address: '0x', asset: 'WETH', apy: '—', tvl: '180', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: false, isV2: false },
+  { protocol: 'Aave', name: 'Aave cbBTC Supply', address: '0x', asset: 'cbBTC', apy: '—', tvl: '95', chain: 'Base', url: 'https://app.aave.com/?marketName=proto_base_v3', isBtc: true, isV2: false },
 ]
 
 const ASSET_COLORS: Record<string, string> = {
