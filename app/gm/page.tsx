@@ -16,6 +16,7 @@ interface GmData {
   gmmedToday: boolean
   score: number
   totalGms: number
+  validGms: number    // only first-of-day GMs
   lastGm: string | null
 }
 interface FeedItem { address: string; streak: number; time: number }
@@ -88,11 +89,11 @@ export default function GmPage() {
   const g = TEXT.gm
   const c = TEXT.common
 
-  const [data, setData] = useState<GmData>({ streak: 0, gmmedToday: false, score: 0, totalGms: 0, lastGm: null })
+  const [data, setData] = useState<GmData>({ streak: 0, gmmedToday: false, score: 0, totalGms: 0, validGms: 0, lastGm: null })
   const [feed, setFeed] = useState<FeedItem[]>([])
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
-  const [earnedMsg, setEarnedMsg] = useState<{ score: number; milestone: { day: number; bonus: number } | null } | null>(null)
+  const [earnedMsg, setEarnedMsg] = useState<{ score: number; milestone: { day: number; bonus: number } | null; isFirstToday: boolean } | null>(null)
   const [streakLost, setStreakLost] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -166,15 +167,29 @@ export default function GmPage() {
       const res = await fetch(`/api/gm/record?address=${address}${referrerAddr ? `&referrer=${referrerAddr}` : ''}`, { method: 'POST' })
       const result = await res.json()
 
+      // Handle spam protection (429 too fast)
+      if (res.status === 429) {
+        setError(lang === 'tr' ? 'Çok hızlı — birkaç saniye bekle' : 'Too fast — wait a few seconds')
+        setStatus('error')
+        return
+      }
+
+      const wasFirstToday = result.isFirstToday
+
       setData(prev => ({
         ...prev,
         streak: result.streak,
         gmmedToday: true,
         score: result.score,
         totalGms: result.totalGms ?? prev.totalGms + 1,
+        validGms: result.validGms ?? (wasFirstToday ? (prev.validGms ?? 0) + 1 : prev.validGms ?? 0),
         lastGm: new Date().toISOString().slice(0, 10),
       }))
-      setEarnedMsg({ score: result.earned, milestone: result.milestone })
+      setEarnedMsg({
+        score: result.earned,
+        milestone: result.milestone,
+        isFirstToday: wasFirstToday,
+      })
 
       const [feedRes, lbRes] = await Promise.all([
         fetch('/api/gm/feed').then(r => r.json()),
@@ -328,10 +343,32 @@ export default function GmPage() {
 
           {/* Earned message */}
           {status === 'success' && earnedMsg && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid #16a34a55', borderRadius: '10px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#4ade80' }}>{tx(g.gmSent, lang)} +{earnedMsg.score}</div>
-              {earnedMsg.milestone && (
-                <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '4px' }}>
+            <div style={{ background: earnedMsg.isFirstToday ? 'var(--bg-card)' : 'var(--bg-card)', border: `1px solid ${earnedMsg.isFirstToday ? '#16a34a55' : '#1e3a5f'}`, borderRadius: '10px', padding: '14px 16px' }}>
+              {earnedMsg.isFirstToday ? (
+                <>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#4ade80', marginBottom: '4px' }}>
+                    {lang === 'tr' ? '✓ Bugünkü ana GM tamamlandı' : '✓ Today\'s main GM is done'} +{earnedMsg.score}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                    {lang === 'tr'
+                      ? 'İstersen ekstra işlem yapabilirsin, ancak ana aktivite kaydedildi.'
+                      : 'You can send more, but your main activity is already recorded.'}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#60a5fa', marginBottom: '2px' }}>
+                    {lang === 'tr' ? 'Ekstra GM gönderildi' : 'Extra GM sent'} +{earnedMsg.score}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {lang === 'tr'
+                      ? 'Streak ve referral için bugünkü ilk GM geçerlidir.'
+                      : 'Only your first GM today counts for streak and referral.'}
+                  </div>
+                </>
+              )}
+              {earnedMsg.milestone && earnedMsg.isFirstToday && (
+                <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '6px' }}>
                   Day {earnedMsg.milestone.day} {tx(g.milestone, lang)} +{earnedMsg.milestone.bonus} {tx(g.bonusLabel, lang)}
                 </div>
               )}
@@ -375,8 +412,11 @@ export default function GmPage() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.totalGms, lang)}</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>{tx(g.totalGms, lang)}</div>
               <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{data.totalGms}</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px' }}>
+                {lang === 'tr' ? `${data.validGms ?? 0} geçerli` : `${data.validGms ?? 0} valid`}
+              </div>
             </div>
             {userRank ? (
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>

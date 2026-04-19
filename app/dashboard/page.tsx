@@ -145,8 +145,24 @@ export default function DashboardPage() {
 
         {/* ── 2. STEP FLOW ─────────────────────────────────────────────── */}
         <div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600' }}>
-            {tx(d.stepsIntro, lang)}
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: '1.6' }}>
+            {lang === 'tr' ? (
+              <>
+                Bu{' '}
+                <span style={{ color: '#dc2626', fontWeight: '700' }}>5 adım</span>
+                {' '}
+                <span style={{ color: '#dc2626', fontWeight: '700' }}>temel aktivite döngündür</span>
+                . Hepsini aynı anda değil — zamanla ve düzenli olarak yap.
+              </>
+            ) : (
+              <>
+                These{' '}
+                <span style={{ color: '#dc2626', fontWeight: '700' }}>5 steps</span>
+                {' '}are your{' '}
+                <span style={{ color: '#dc2626', fontWeight: '700' }}>core activity loop</span>
+                . Do them consistently over time — not all at once.
+              </>
+            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
             {d.steps.map(step => {
@@ -166,7 +182,14 @@ export default function DashboardPage() {
                       {isDone && (
                         <div style={{ position: 'absolute', top: '10px', right: '10px', width: '16px', height: '16px', borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'white' }}>&#10003;</div>
                       )}
-                      <div style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1, color: isDone ? '#4ade80' : 'var(--text-faint)', marginBottom: '6px' }}>{step.n}</div>
+                      {/* Red badge number */}
+                      <div style={{
+                        width: '28px', height: '28px', borderRadius: '50%',
+                        background: isDone ? '#16a34a' : '#dc2626',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '13px', fontWeight: '800', color: 'white',
+                        marginBottom: '10px', flexShrink: 0,
+                      }}>{step.n}</div>
                       <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>{title}</div>
                       <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '8px' }}>{sub}</div>
                       <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '600' }}>{cta}</div>
