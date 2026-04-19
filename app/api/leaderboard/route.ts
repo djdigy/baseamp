@@ -7,7 +7,6 @@ export interface LeaderboardEntry {
   address: string
   score: number
   rank: number
-  code: string | null
 }
 
 export async function GET() {
@@ -17,9 +16,7 @@ export async function GET() {
   for (let i = 0; i < results.length; i += 2) {
     const address = results[i] as string
     const score   = Number(results[i + 1])
-    // Look up referral code for this address (non-blocking, null if missing)
-    const code = await redis.get<string>(`refcode:addr:${address}`).catch(() => null)
-    entries.push({ address, score, rank: entries.length + 1, code: code ?? null })
+    entries.push({ address, score, rank: entries.length + 1 })
   }
 
   return NextResponse.json({ entries })

@@ -3,7 +3,6 @@
 import { Sidebar } from './Sidebar'
 import { ConnectWallet } from './ConnectWallet'
 import { ThemeToggle } from './ThemeToggle'
-import { useReferral } from '@/hooks/useReferral'
 import { useLang } from './Providers'
 
 function LangToggle() {
@@ -24,7 +23,6 @@ function LangToggle() {
 }
 
 export function AppLayout({ children, title }: { children: React.ReactNode, title: string }) {
-  useReferral()
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>

@@ -7,7 +7,6 @@ import { useState, useEffect, useRef } from 'react'
 import { base } from 'wagmi/chains'
 import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
-import { useReferral } from '@/hooks/useReferral'
 import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
 
@@ -83,7 +82,6 @@ export default function GmPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
-  const { referrer } = useReferral()
   const countdown = useCountdown()
   const { lang } = useLang()
   const g = TEXT.gm
@@ -127,19 +125,8 @@ export default function GmPage() {
     }
   }, [data])
 
-  const hasReferral = !!referrer && referrer !== address?.toLowerCase()
   const urgencyColor = getUrgencyColor(countdown.totalSeconds, data.gmmedToday)
   const isUrgent = !data.gmmedToday && data.streak > 0 && countdown.totalSeconds < 10800
-
-  // Resolve referrer address from code if needed
-  async function getReferrerAddress(): Promise<string | null> {
-    if (!referrer) return null
-    if (referrer.startsWith('0x')) return referrer.toLowerCase()
-    const res = await fetch(`/api/referral/code?code=${referrer}`).catch(() => null)
-    if (!res?.ok) return null
-    const data = await res.json()
-    return data.address?.toLowerCase() ?? null
-  }
 
   async function handleGM() {
     if (!address || !publicClient || status === 'sending') return
@@ -162,9 +149,7 @@ export default function GmPage() {
       })
       await publicClient.waitForTransactionReceipt({ hash })
 
-      // Record GM + notify server of referrer for split tracking
-      const referrerAddr = hasReferral ? await getReferrerAddress() : null
-      const res = await fetch(`/api/gm/record?address=${address}${referrerAddr ? `&referrer=${referrerAddr}` : ''}`, { method: 'POST' })
+      const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
       const result = await res.json()
 
       // Handle spam protection (429 too fast)
@@ -229,8 +214,8 @@ export default function GmPage() {
         : tx(g.sendBtn, lang)
 
   const btnHint = data.gmmedToday
-    ? tx(g.hintAgain, lang)
-    : tx(g.hintFirst, lang)
+    ? (lang === 'tr' ? 'Bugünkü ana GM kaydedildi' : "Today's main GM recorded")
+    : (lang === 'tr' ? 'Günlük ilk işlem streak için sayılır' : 'First daily TX counts for streak')
 
   const streakIcon = data.gmmedToday ? '✅'
     : isUrgent ? '⏳'

@@ -14,11 +14,6 @@ interface WalletStats {
   firstActivity: string | null; walletAge: number; builderScore: number
 }
 interface GmStatus    { streak: number; gmmedToday: boolean; score: number }
-interface ReferralData {
-  code: string; referralLink: string
-  totalReferrals: number; totalEarned: string; todayEarned: string; dailyEarnings: number
-}
-
 function AnalyticCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
@@ -34,9 +29,7 @@ export default function DashboardPage() {
   const { lang } = useLang()
   const [stats, setStats]         = useState<WalletStats | null>(null)
   const [gmStatus, setGmStatus]   = useState<GmStatus | null>(null)
-  const [referral, setReferral]   = useState<ReferralData | null>(null)
   const [loading, setLoading]     = useState(false)
-  const [refCopied, setRefCopied] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
 
   const d = TEXT.dashboard
@@ -49,19 +42,9 @@ export default function DashboardPage() {
     Promise.all([
       fetch(statsUrl).then(r => r.json()),
       fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
-      fetch(`/api/referral/code?address=${address}`).then(r => r.json()),
-      fetch(`/api/referral/stats?address=${address}`).then(r => r.json()).catch(() => null),
-    ]).then(([walletData, gmData, codeData, refStats]) => {
+    ]).then(([walletData, gmData]) => {
       setStats(walletData)
       setGmStatus(gmData)
-      if (codeData?.link) setReferral({
-        code: codeData.code,
-        referralLink: codeData.link,
-        totalReferrals: refStats?.totalReferrals ?? 0,
-        totalEarned:    refStats?.totalEarned ?? '0.000000',
-        todayEarned:    refStats?.todayEarned ?? '0.000000',
-        dailyEarnings:  refStats?.dailyEarnings ?? 0,
-      })
     }).catch(() => {}).finally(() => setLoading(false))
   }
 
@@ -84,15 +67,8 @@ export default function DashboardPage() {
   const streak     = gmStatus?.streak ?? 0
   const milestone  = getNextMilestone(streak)
   const totalScore = gmStatus?.score ?? 0
-  const hasInvited = (referral?.totalReferrals ?? 0) > 0
-  const done: Record<string, boolean> = { gm: gmmedToday, swap: false, earn: false, deploy: false, invite: hasInvited }
+  const done: Record<string, boolean> = { gm: gmmedToday, swap: false, earn: false, deploy: false }
 
-  function copyReferral() {
-    if (!referral?.referralLink) return
-    navigator.clipboard.writeText(referral.referralLink).catch(() => {})
-    setRefCopied(true)
-    setTimeout(() => setRefCopied(false), 2000)
-  }
 
   const V = (v: number | null | undefined) =>
     loading ? '...' : v != null ? String(v) : '—'
@@ -259,74 +235,6 @@ export default function DashboardPage() {
                 ? 'Bu cüzdanda Base üzerinde işlem bulunamadı. GM göndererek aktiviteni başlatabilirsin.'
                 : 'No transactions found on Base for this wallet. Send your first GM to start building activity.'}
             </div>
-          )}
-        </div>
-
-        {/* ── 5. REFERRAL ──────────────────────────────────────────────── */}
-        <div id="referral" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px' }}>
-          <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '6px', letterSpacing: '-0.2px' }}>
-            {tx(d.referralTitle, lang)}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', lineHeight: '1.6' }}>
-            {tx(d.referralCta, lang)}
-          </div>
-          <div style={{ fontSize: '11px', color: '#f97316', fontWeight: '600', marginBottom: '14px' }}>
-            👉 {tx(d.passiveIncome, lang)}
-          </div>
-
-          {referral && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
-              <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(d.totalReferrals, lang)}</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#60a5fa' }}>{referral.totalReferrals}</div>
-              </div>
-              <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(d.earnedEth, lang)} (ETH)</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#22c55e' }}>{referral.totalEarned}</div>
-              </div>
-              <div style={{ background: parseFloat(referral.todayEarned) > 0 ? '#052e16' : 'var(--bg-card2)', border: `1px solid ${parseFloat(referral.todayEarned) > 0 ? '#166534' : 'var(--border)'}`, borderRadius: '8px', padding: '10px 12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(d.todayScore, lang)} (ETH)</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: parseFloat(referral.todayEarned) > 0 ? '#4ade80' : 'var(--text-faint)' }}>
-                  {parseFloat(referral.todayEarned) > 0 ? `+${referral.todayEarned}` : '0.000000'}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', fontWeight: '800', color: 'white' }}>
-              👉 %20 Referral Payı
-            </div>
-          </div>
-
-          {referral ? (
-            <>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <div style={{ flex: 1, background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '7px 10px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {referral.referralLink}
-                </div>
-                <button onClick={copyReferral} style={{ background: refCopied ? '#052e16' : 'var(--bg-card2)', border: `1px solid ${refCopied ? '#16a34a' : 'var(--border)'}`, borderRadius: '6px', padding: '7px 14px', fontSize: '12px', fontWeight: '600', color: refCopied ? '#4ade80' : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  {refCopied ? tx(c.copied, lang) : tx(c.copyLink, lang)}
-                </button>
-                <button onClick={() => {
-                  const text = lang === 'tr'
-                    ? `BaseAmp'te günlük GM gönder, onchain aktivite biriktir.\n\nBeni referans olarak ekle, her işlemden %20 kazanıyorum:\n${referral.referralLink}`
-                    : `Send daily GM on BaseAmp, stack onchain activity.\n\nUse my referral — I earn 20% from your fees:\n${referral.referralLink}`
-                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
-                }} style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '7px 14px', fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                  {tx(c.share, lang)}
-                </button>
-              </div>
-              {referral.totalReferrals === 0 && (
-                <div style={{ fontSize: '12px', color: '#f97316', fontWeight: '600', padding: '8px 0' }}>
-                  {lang === 'tr' ? '⚡ Henüz referansın yok. Linki paylaş — her aktif kullanıcı sana ETH kazandırır.' : '⚡ No referrals yet. Share your link — every active user earns you ETH.'}
-                </div>
-              )}
-            </>
-          ) : loading ? (
-            <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{tx(c.loading, lang)}</div>
-          ) : (
-            <div style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{tx(d.noReferrals, lang)}</div>
           )}
         </div>
 

@@ -8,7 +8,6 @@ import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
 import { BUILDER_CODE, OWNER_ADDRESS, DEPLOY_FEE } from '@/lib/constants'
-import { useReferral } from '@/hooks/useReferral'
 import * as ERC8021 from 'ox/erc8021'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155' | 'Counter' | 'Greeter' | 'Logbook'
@@ -103,11 +102,9 @@ export default function DeployPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
-  const { referrer } = useReferral()
   const { lang } = useLang()
   const d = TEXT.deploy
 
-  const hasReferral = !!referrer && referrer?.toLowerCase() !== address?.toLowerCase()
 
   const [selectedId, setSelectedId] = useState<DeployType>('Counter')
   const [fields, setFields] = useState<Record<string, string>>({
@@ -127,19 +124,7 @@ export default function DeployPage() {
     if (!address || !publicClient) return
     setStatus('fee'); setError(''); setTxHash(''); setContractAddr('')
     try {
-      // Resolve referrer address (code → address if needed)
-      let referrerAddr: string | null = null
-      if (hasReferral && referrer) {
-        if (referrer.startsWith('0x')) {
-          referrerAddr = referrer.toLowerCase()
-        } else {
-          const res = await fetch(`/api/referral/code?code=${referrer}`).catch(() => null)
-          if (res?.ok) { const d = await res.json(); referrerAddr = d.address?.toLowerCase() ?? null }
-        }
-      }
-
-      // Fee TX — single TX to platform with builder code embedded
-      // Referral split tracked server-side (20% credited to referrer in Redis)
+      // Fee TX — full fee to platform with builder code embedded
       const feeHash = await sendTransactionAsync({
         to: OWNER_ADDRESS,
         value: DEPLOY_FEE,
@@ -162,15 +147,6 @@ export default function DeployPage() {
       setTxHash(deployHash)
       const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })
       if (receipt.contractAddress) setContractAddr(receipt.contractAddress)
-
-      // Record referral earnings server-side
-      if (referrerAddr) {
-        await fetch('/api/referral/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ referrer: referrerAddr, referee: address, feeEth: Number(DEPLOY_FEE) / 1e18 }),
-        }).catch(() => {})
-      }
 
       setStatus('success')
     } catch (err: unknown) {
