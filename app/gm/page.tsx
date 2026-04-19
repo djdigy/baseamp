@@ -1,14 +1,15 @@
 'use client'
 
 import { AppLayout } from '@/components/AppLayout'
-import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
+import { useAccount, useSendTransaction, usePublicClient, useConnect } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
-
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { base } from 'wagmi/chains'
 import { BUILDER_CODE, PLATFORM_ADDRESS, GM_FEE, buildERC8021Data } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
+import { isBaseAppBrowser } from '@/lib/baseapp'
 
 interface GmData {
   streak: number
@@ -82,6 +83,7 @@ export default function GmPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
+  const { connect, connectors } = useConnect()
   const countdown = useCountdown()
   const { lang } = useLang()
   const g = TEXT.gm
@@ -193,14 +195,34 @@ export default function GmPage() {
 
   const userRank = leaderboard.find(e => e.address === address?.toLowerCase())
   const nextMilestoneData = getNextMilestone(data.streak)
+  const inBaseApp = typeof window !== 'undefined' && isBaseAppBrowser()
 
   if (!isConnected) {
     return (
       <AppLayout title="GM">
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
-          <div style={{ fontSize: '48px' }}>&#9728;</div>
-          <div style={{ fontSize: '18px', fontWeight: '600' }}>{tx(TEXT.common.connectWallet, lang)}</div>
-          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{tx(g.connectSub, lang)}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px', padding: '0 16px' }}>
+          <div style={{ fontSize: '56px', lineHeight: 1 }}>☀</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>BaseAmp</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+              {inBaseApp
+                ? (lang === 'tr' ? 'Cüzdanını bağla ve GM göndermeye başla' : 'Connect your wallet to start sending GM')
+                : tx(g.connectSub, lang)}
+            </div>
+          </div>
+          {inBaseApp ? (
+            <button
+              onClick={() => {
+                const injectedConnector = connectors.find(c => c.id === 'injected' || c.id === 'coinbaseWallet')
+                if (injectedConnector) connect({ connector: injectedConnector, chainId: 8453 })
+              }}
+              style={{ padding: '16px 48px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', border: 'none', borderRadius: '14px', fontSize: '17px', fontWeight: '800', color: 'white', cursor: 'pointer', width: '100%', maxWidth: '320px' }}
+            >
+              {lang === 'tr' ? 'Bağlan' : 'Connect Wallet'}
+            </button>
+          ) : (
+            <ConnectButton />
+          )}
         </div>
       </AppLayout>
     )
@@ -227,6 +249,64 @@ export default function GmPage() {
 
   return (
     <AppLayout title="GM">
+      {/* BaseApp / Mobile: prominent single-button layout at top */}
+      {inBaseApp && (
+        <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Streak badge */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: data.gmmedToday ? 'linear-gradient(135deg,#052e16,#064e3b)' : 'var(--bg-card)', border: `1px solid ${data.gmmedToday ? '#16a34a' : isUrgent ? '#ea580c' : 'var(--border)'}`, borderRadius: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '24px' }}>{streakIcon}</span>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: urgencyColor, lineHeight: 1 }}>{loading ? '...' : data.streak} {tx(c.dayStreak, lang)}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>score: {data.score}</div>
+              </div>
+            </div>
+            {!data.gmmedToday && data.streak > 0 && (
+              <div style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace', color: urgencyColor }}>
+                {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
+              </div>
+            )}
+          </div>
+
+          {/* THE BUTTON — full width, large, immediate */}
+          <button
+            onClick={handleGM}
+            disabled={status === 'sending'}
+            style={{
+              width: '100%', padding: '20px',
+              background: status === 'sending' ? 'var(--bg-card2)' : isUrgent && !data.gmmedToday ? 'linear-gradient(135deg,#dc2626,#ea580c)' : 'linear-gradient(135deg,#f97316,#ea580c)',
+              border: 'none', borderRadius: '16px',
+              fontSize: '20px', fontWeight: '900', color: status === 'sending' ? '#475569' : 'white',
+              cursor: status === 'sending' ? 'not-allowed' : 'pointer',
+              boxShadow: isUrgent && !data.gmmedToday ? '0 0 24px #ea580c55' : '0 4px 20px rgba(249,115,22,0.3)',
+              transition: 'all 0.2s',
+              letterSpacing: '-0.3px',
+            }}
+          >
+            {status === 'sending' ? (lang === 'tr' ? 'Gönderiliyor...' : 'Sending...') : btnLabel}
+          </button>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center' }}>{btnHint}</div>
+
+          {/* Post-GM message */}
+          {status === 'success' && earnedMsg && (
+            <div style={{ background: earnedMsg.isFirstToday ? '#052e16' : 'var(--bg-card)', border: `1px solid ${earnedMsg.isFirstToday ? '#16a34a' : '#1e3a5f'}`, borderRadius: '10px', padding: '12px 14px' }}>
+              {earnedMsg.isFirstToday ? (
+                <>
+                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#4ade80' }}>{lang === 'tr' ? '✓ Bugünkü ana GM tamamlandı' : "✓ Today's main GM done"} +{earnedMsg.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{lang === 'tr' ? 'Aktivite kaydedildi.' : 'Activity recorded.'}</div>
+                </>
+              ) : (
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#60a5fa' }}>{lang === 'tr' ? 'Ekstra GM gönderildi' : 'Extra GM sent'} +{earnedMsg.score}</div>
+              )}
+            </div>
+          )}
+          {status === 'error' && error && (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '10px 12px', fontSize: '12px', color: '#f87171' }}>{error}</div>
+          )}
+          <div style={{ width: '100%', height: '1px', background: 'var(--border)' }} />
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
         <div style={{ gridColumn: '1 / -1', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
           {tx(g.pageInfo, lang)}
