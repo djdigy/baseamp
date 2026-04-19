@@ -7,8 +7,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { OWNER_ADDRESS, BUILDER_CODE, DEPLOY_FEE } from '@/lib/constants'
-import { useReferral, calculateFee } from '@/hooks/useReferral'
+import { BUILDER_CODE } from '@/lib/constants'
 import * as ERC8021 from 'ox/erc8021'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155' | 'Counter' | 'Greeter' | 'Logbook'
@@ -103,7 +102,6 @@ export default function DeployPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
-  const { referrer } = useReferral()
   const { lang } = useLang()
   const d = TEXT.deploy
 
@@ -111,13 +109,10 @@ export default function DeployPage() {
   const [fields, setFields] = useState<Record<string, string>>({
     name: '', symbol: '', supply: '1000000', decimals: '18', uri: '', greeting: 'Hello, Base!',
   })
-  const [status, setStatus] = useState<'idle' | 'fee' | 'deploying' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle')
   const [txHash, setTxHash] = useState('')
   const [contractAddr, setContractAddr] = useState('')
   const [error, setError] = useState('')
-
-  const hasReferral = !!referrer && referrer !== address?.toLowerCase()
-  const fee = calculateFee(DEPLOY_FEE, hasReferral)
   const selected = CONTRACTS.find(c => c.id === selectedId)!
 
   const canDeploy = selected.fields
@@ -126,13 +121,8 @@ export default function DeployPage() {
 
   async function handleDeploy() {
     if (!address || !publicClient) return
-    setStatus('fee'); setError(''); setTxHash(''); setContractAddr('')
+    setStatus('deploying'); setError(''); setTxHash(''); setContractAddr('')
     try {
-      // Fee TX — plain ETH, no calldata on EOA (calldata on EOA causes InvalidJump)
-      const feeHash = await sendTransactionAsync({ to: OWNER_ADDRESS, value: fee, chainId: base.id })
-      await publicClient.waitForTransactionReceipt({ hash: feeHash })
-      setStatus('deploying')
-
       // Deploy with ERC-8021 attribution suffix appended to bytecode
       const { bytecode, args } = selected.encode(fields)
       const suffix = ERC8021.Attribution.toDataSuffix({ codes: [BUILDER_CODE] }) as `0x${string}`
@@ -147,12 +137,6 @@ export default function DeployPage() {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })
       if (receipt.contractAddress) setContractAddr(receipt.contractAddress)
 
-      if (hasReferral && referrer) {
-        await fetch('/api/referral/register', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ referrer, referee: address, feeAmount: Number(fee) / 1e18 }),
-        }).catch(() => {})
-      }
       setStatus('success')
     } catch (err: unknown) {
       const e = err as { shortMessage?: string; message?: string }
@@ -172,7 +156,7 @@ export default function DeployPage() {
     )
   }
 
-  const busy = status === 'fee' || status === 'deploying'
+  const busy = status === 'deploying'
 
   return (
     <AppLayout title="Deploy Contract">
@@ -218,12 +202,11 @@ export default function DeployPage() {
           <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <div style={{ color: 'var(--text-muted)' }}>{tx(d.network, lang)}</div>
             <div style={{ color: '#22c55e' }}>✓ {tx(d.builderAttribution, lang)}</div>
-            {hasReferral && <div style={{ color: '#4ade80' }}>{tx(d.refDiscount, lang)}</div>}
           </div>
 
           {busy && (
             <div style={{ background: 'var(--bg-card2)', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#60a5fa' }}>
-              {status === 'fee' ? tx(d.preparing, lang) : tx(d.deploying, lang)}
+              {tx(d.deploying, lang)}
             </div>
           )}
           {status === 'error' && error && (
@@ -251,7 +234,7 @@ export default function DeployPage() {
 
           <button onClick={handleDeploy} disabled={busy || !canDeploy}
             style={{ width: '100%', padding: '13px', background: busy || !canDeploy ? 'var(--bg-card2)' : 'linear-gradient(135deg, #8b5cf6, #6d28d9)', border: `1px solid ${busy || !canDeploy ? 'var(--border)' : 'transparent'}`, borderRadius: '10px', fontSize: '14px', fontWeight: '700', color: busy || !canDeploy ? 'var(--text-muted)' : 'white', cursor: busy || !canDeploy ? 'not-allowed' : 'pointer' }}>
-            {status === 'fee' ? tx(d.preparingBtn, lang) : status === 'deploying' ? tx(d.deployingBtn, lang)
+            {status === 'deploying' ? tx(d.deployingBtn, lang)
               : lang === 'tr' ? `${selected.title} Deploy Et` : `Deploy ${selected.title}`}
           </button>
         </div>
