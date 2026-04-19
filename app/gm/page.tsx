@@ -307,255 +307,201 @@ export default function GmPage() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,320px)', gap: '16px', alignItems: 'start' }}>
-        <div style={{ gridColumn: '1 / -1', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+      {/* Single-column mobile-first layout */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '600px' }}>
+
+        {/* Page info */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.65' }}>
           {tx(g.pageInfo, lang)}
         </div>
 
-        {/* Left column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Streak loss banner */}
+        {streakLost && !data.gmmedToday && (
+          <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '20px' }}>💔</span>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>{tx(g.streakLost, lang)}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tx(g.streakLostSub, lang)}</div>
+            </div>
+          </div>
+        )}
 
-          {/* Streak loss banner */}
-          {streakLost && !data.gmmedToday && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>💔</span>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f87171' }}>{tx(g.streakLost, lang)}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tx(g.streakLostSub, lang)}</div>
+        {/* Urgency warning */}
+        {!data.gmmedToday && data.streak > 0 && !streakLost && (
+          <div style={{ background: 'var(--bg-card)', border: `1px solid ${isUrgent ? '#ea580c' : '#78350f'}`, borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>{isUrgent ? '🚨' : '⚠️'}</span>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: isUrgent ? '#f97316' : '#fbbf24' }}>
+                {tx(g.streakWarning, lang)} {data.streak}{tx(g.streakDays, lang)}
               </div>
             </div>
-          )}
+            <div style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'monospace', color: urgencyColor, background: 'var(--bg-card2)', padding: '4px 10px', borderRadius: '6px', border: `1px solid ${urgencyColor}44` }}>
+              {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
+            </div>
+          </div>
+        )}
 
-          {/* Urgency warning */}
-          {!data.gmmedToday && data.streak > 0 && !streakLost && (
-            <div style={{
-              background: 'var(--bg-card)',
-              border: `1px solid ${isUrgent ? '#ea580c' : '#78350f'}`,
-              borderRadius: '10px', padding: '12px 16px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>{isUrgent ? '🚨' : '⚠️'}</span>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: isUrgent ? '#f97316' : '#fbbf24' }}>
-                  {tx(g.streakWarning, lang)} {data.streak}{tx(g.streakDays, lang)}
+        {/* Main stats card */}
+        <div style={{
+          background: data.gmmedToday ? 'linear-gradient(135deg,#052e16,#064e3b)' : isUrgent ? 'linear-gradient(135deg,#1a0800,#2d1000)' : 'linear-gradient(135deg,#1c1208,#2d1a00)',
+          border: `1px solid ${data.gmmedToday ? '#16a34a' : isUrgent ? '#ea580c' : '#78350f'}`,
+          borderRadius: '16px', padding: '20px', transition: 'all 0.5s',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e' }}>
+                {data.gmmedToday ? tx(g.activeToday, lang) : 'GM'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '20px' }}>
+                <div>
+                  <div style={{ fontSize: '52px', fontWeight: '900', lineHeight: 1, color: urgencyColor }}>{loading ? '...' : data.streak}</div>
+                  <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : 'var(--text-muted)' }}>{tx(c.dayStreak, lang)}</div>
                 </div>
-              </div>
-              <div style={{
-                fontSize: '13px', fontWeight: '700', fontFamily: 'monospace',
-                color: urgencyColor, background: 'var(--bg-card2)', padding: '4px 10px',
-                borderRadius: '6px', border: `1px solid ${urgencyColor}44`,
-              }}>
-                {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
-              </div>
-            </div>
-          )}
-
-          {/* No streak countdown */}
-          {!data.gmmedToday && data.streak === 0 && (
-            <div style={{ fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>
-              Streak resets in {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
-            </div>
-          )}
-
-          {/* Main stats card */}
-          <div style={{
-            background: data.gmmedToday
-              ? 'linear-gradient(135deg, #052e16, #064e3b)'
-              : isUrgent
-                ? 'linear-gradient(135deg, #1a0800, #2d1000)'
-                : 'linear-gradient(135deg, #1c1208, #2d1a00)',
-            border: `1px solid ${data.gmmedToday ? '#16a34a' : isUrgent ? '#ea580c' : '#78350f'}`,
-            borderRadius: '16px', padding: '20px', transition: 'all 0.5s',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{
-                  fontSize: '11px', fontWeight: '700', textTransform: 'uppercase',
-                  letterSpacing: '0.08em', marginBottom: '8px',
-                  color: data.gmmedToday ? '#4ade80' : isUrgent ? '#f97316' : '#92400e',
-                }}>
-                  {data.gmmedToday ? tx(g.activeToday, lang) : 'GM'}
+                <div style={{ width: '1px', height: '48px', background: 'var(--border)' }} />
+                <div>
+                  <div style={{ fontSize: '36px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>{loading ? '...' : data.score}</div>
+                  <div style={{ fontSize: '11px', marginTop: '2px', color: 'var(--text-muted)' }}>score</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
-                  <div>
-                    <div style={{ fontSize: '44px', fontWeight: '900', lineHeight: 1, color: urgencyColor, transition: 'color 0.5s' }}>
-                      {loading ? '...' : data.streak}
+                {userRank && (
+                  <>
+                    <div style={{ width: '1px', height: '48px', background: 'var(--border)' }} />
+                    <div>
+                      <div style={{ fontSize: '28px', fontWeight: '800', lineHeight: 1, color: '#a78bfa' }}>#{userRank.rank}</div>
+                      <div style={{ fontSize: '11px', marginTop: '2px', color: 'var(--text-muted)' }}>{tx(g.yourRank, lang)}</div>
                     </div>
-                    <div style={{ fontSize: '11px', marginTop: '2px', color: data.gmmedToday ? '#16a34a' : 'var(--text-muted)' }}>{tx(c.dayStreak, lang)}</div>
-                  </div>
-                  <div style={{ width: '1px', height: '44px', background: 'var(--border)' }} />
-                  <div>
-                    <div style={{ fontSize: '32px', fontWeight: '800', lineHeight: 1, color: '#fbbf24' }}>
-                      {loading ? '...' : data.score}
-                    </div>
-                    <div style={{ fontSize: '11px', marginTop: '2px', color: 'var(--text-muted)' }}>score</div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
-              <div style={{ fontSize: '40px' }}>{streakIcon}</div>
             </div>
-            {nextMilestoneData && !data.gmmedToday && (
-              <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                {nextMilestoneData.daysLeft} day{nextMilestoneData.daysLeft !== 1 ? 's' : ''} to Day {nextMilestoneData.day} — +{nextMilestoneData.bonus} bonus
-              </div>
-            )}
+            <div style={{ fontSize: '48px' }}>{streakIcon}</div>
           </div>
-
-          {/* Milestones */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>{tx(g.milestones, lang)}</div>
-            <MilestoneBar streak={data.streak} />
-          </div>
-
-          {/* Earned message */}
-          {status === 'success' && earnedMsg && (
-            <div style={{ background: earnedMsg.isFirstToday ? 'var(--bg-card)' : 'var(--bg-card)', border: `1px solid ${earnedMsg.isFirstToday ? '#16a34a55' : '#1e3a5f'}`, borderRadius: '10px', padding: '14px 16px' }}>
-              {earnedMsg.isFirstToday ? (
-                <>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#4ade80', marginBottom: '4px' }}>
-                    {lang === 'tr' ? '✓ Bugünkü ana GM tamamlandı' : '✓ Today\'s main GM is done'} +{earnedMsg.score}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                    {lang === 'tr'
-                      ? 'İstersen ekstra işlem yapabilirsin, ancak ana aktivite kaydedildi.'
-                      : 'You can send more, but your main activity is already recorded.'}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#60a5fa', marginBottom: '2px' }}>
-                    {lang === 'tr' ? 'Ekstra GM gönderildi' : 'Extra GM sent'} +{earnedMsg.score}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {lang === 'tr'
-                      ? 'Streak ve referral için bugünkü ilk GM geçerlidir.'
-                      : 'Only your first GM today counts for streak and referral.'}
-                  </div>
-                </>
-              )}
-              {earnedMsg.milestone && earnedMsg.isFirstToday && (
-                <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '6px' }}>
-                  Day {earnedMsg.milestone.day} {tx(g.milestone, lang)} +{earnedMsg.milestone.bonus} {tx(g.bonusLabel, lang)}
-                </div>
-              )}
+          {nextMilestoneData && !data.gmmedToday && (
+            <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              {nextMilestoneData.daysLeft} {lang === 'tr' ? 'gün sonra' : 'days to'} Day {nextMilestoneData.day} — +{nextMilestoneData.bonus} bonus
             </div>
           )}
+        </div>
 
-          {/* Error */}
-          {status === 'error' && error && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
-              {error}
-            </div>
-          )}
+        {/* THE BUTTON */}
+        <div>
+          <button
+            onClick={handleGM}
+            disabled={status === 'sending'}
+            style={{
+              width: '100%', padding: '18px',
+              background: status === 'sending' ? 'var(--bg-card2)' : isUrgent && !data.gmmedToday ? 'linear-gradient(135deg,#dc2626,#ea580c)' : 'linear-gradient(135deg,#f97316,#ea580c)',
+              border: 'none', borderRadius: '14px',
+              fontSize: '18px', fontWeight: '900',
+              color: status === 'sending' ? '#475569' : 'white',
+              cursor: status === 'sending' ? 'not-allowed' : 'pointer',
+              boxShadow: isUrgent && !data.gmmedToday ? '0 0 20px #ea580c55' : '0 4px 16px rgba(249,115,22,0.25)',
+              transition: 'all 0.3s',
+            }}
+          >
+            {btnLabel}
+          </button>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '6px' }}>{btnHint}</div>
+        </div>
 
-          {/* GM Button — always rendered, never replaced */}
-          <div>
-            <button
-              onClick={handleGM}
-              disabled={status === 'sending'}
-              style={{
-                width: '100%', padding: '16px',
-                background: status === 'sending'
-                  ? 'var(--bg-card2)'
-                  : isUrgent && !data.gmmedToday
-                    ? 'linear-gradient(135deg, #dc2626, #ea580c)'
-                    : 'linear-gradient(135deg, #f97316, #ea580c)',
-                border: 'none', borderRadius: '12px',
-                fontSize: '16px', fontWeight: '800',
-                color: status === 'sending' ? '#475569' : 'white',
-                cursor: status === 'sending' ? 'not-allowed' : 'pointer',
-                boxShadow: isUrgent && !data.gmmedToday ? '0 0 20px #ea580c55' : 'none',
-                transition: 'all 0.3s',
-              }}
-            >
-              {btnLabel}
-            </button>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '6px' }}>
-              {btnHint}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '10px' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>{tx(g.totalGms, lang)}</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{data.totalGms}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px' }}>
-                {lang === 'tr' ? `${data.validGms ?? 0} geçerli` : `${data.validGms ?? 0} valid`}
-              </div>
-            </div>
-            {userRank ? (
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.yourRank, lang)}</div>
-                <div style={{ fontSize: '20px', fontWeight: '700', color: '#fbbf24' }}>#{userRank.rank}</div>
-              </div>
+        {/* Post-GM feedback */}
+        {status === 'success' && earnedMsg && (
+          <div style={{ background: earnedMsg.isFirstToday ? '#052e16' : 'var(--bg-card)', border: `1px solid ${earnedMsg.isFirstToday ? '#16a34a' : '#1e3a5f'}`, borderRadius: '10px', padding: '14px 16px' }}>
+            {earnedMsg.isFirstToday ? (
+              <>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#4ade80', marginBottom: '4px' }}>
+                  {lang === 'tr' ? '✓ Bugünkü ana GM tamamlandı' : "✓ Today's main GM is done"} +{earnedMsg.score}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                  {lang === 'tr' ? 'İstersen ekstra işlem yapabilirsin, ancak ana aktivite kaydedildi.' : 'You can send more, but your main activity is already recorded.'}
+                </div>
+              </>
             ) : (
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.resetsIn, lang)}</div>
-                <div style={{ fontSize: '16px', fontWeight: '700', color: urgencyColor, fontFamily: 'monospace' }}>
-                  {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
+              <>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#60a5fa', marginBottom: '2px' }}>
+                  {lang === 'tr' ? 'Ekstra GM gönderildi' : 'Extra GM sent'} +{earnedMsg.score}
                 </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {lang === 'tr' ? 'Bugünkü ilk GM streak için geçerlidir.' : 'Only your first GM today counts for streak.'}
+                </div>
+              </>
+            )}
+            {earnedMsg.milestone && earnedMsg.isFirstToday && (
+              <div style={{ fontSize: '13px', color: '#22c55e', marginTop: '6px' }}>
+                Day {earnedMsg.milestone.day} {tx(g.milestone, lang)} +{earnedMsg.milestone.bonus} {tx(g.bonusLabel, lang)}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Error */}
+        {status === 'error' && error && (
+          <div style={{ background: 'var(--bg-card)', border: '1px solid #7f1d1d', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#f87171' }}>
+            {error}
+          </div>
+        )}
+
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>{tx(g.totalGms, lang)}</div>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>{data.totalGms}</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px' }}>{lang === 'tr' ? `${data.validGms ?? 0} geçerli` : `${data.validGms ?? 0} valid`}</div>
+          </div>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{tx(g.resetsIn, lang)}</div>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: urgencyColor, fontFamily: 'monospace' }}>
+              {pad(countdown.hours)}:{pad(countdown.minutes)}:{pad(countdown.seconds)}
+            </div>
           </div>
         </div>
 
-        {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Milestones */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>{tx(g.milestones, lang)}</div>
+          <MilestoneBar streak={data.streak} />
+        </div>
 
-          {/* Leaderboard */}
+        {/* Leaderboard */}
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
+            {tx(g.leaderboard, lang)}
+          </div>
+          {leaderboard.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>{tx(g.noScores, lang)}</div>
+          ) : leaderboard.map((entry) => {
+            const isMe = entry.address === address?.toLowerCase()
+            const label = isMe
+              ? (entry.rank === 1 ? `${tx(g.youRank, lang)}1)` : `${tx(g.youRank, lang)}${entry.rank})`)
+              : `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`
+            return (
+              <div key={entry.address} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', borderBottom: '1px solid var(--border)', background: isMe ? 'var(--bg-card2)' : 'transparent', borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent' }}>
+                <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: 'var(--text-muted)', minWidth: '22px', textAlign: 'center' }}>
+                  {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
+                </span>
+                <div style={{ flex: 1, minWidth: 0, fontSize: '12px', fontWeight: isMe ? '700' : '500', color: isMe ? '#4ade80' : 'var(--text-primary)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {label}
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#fbbf24' }}>{entry.score}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Activity feed */}
+        {feed.length > 0 && (
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-              {tx(g.leaderboard, lang)}
+              {tx(g.recentGMs, lang)}
             </div>
-            {leaderboard.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--text-faint)' }}>{tx(g.noScores, lang)}</div>
-            ) : leaderboard.map((entry) => {
-              const isMe = entry.address === address?.toLowerCase()
-              const primary = isMe
-                ? (entry.rank === 1 ? `${tx(g.youRank, lang)}1)` : `${tx(g.youRank, lang)}${entry.rank})`)
-                : (entry.code ?? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`)
-              const secondary = !isMe && entry.code ? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}` : null
-              return (
-                <div key={entry.address} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '10px 16px', borderBottom: '1px solid var(--border)',
-                  background: isMe ? 'var(--bg-card2)' : 'transparent',
-                  borderLeft: isMe ? '3px solid #22c55e' : '3px solid transparent',
-                }}>
-                  <span style={{ fontSize: entry.rank <= 3 ? '16px' : '12px', color: 'var(--text-muted)', minWidth: '20px', textAlign: 'center' }}>
-                    {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '12px', fontWeight: isMe ? '700' : '500', color: isMe ? '#4ade80' : 'var(--text-primary)', fontFamily: entry.code || isMe ? 'inherit' : 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {primary}
-                    </div>
-                    {secondary && (
-                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', fontFamily: 'monospace', marginTop: '1px' }}>{secondary}</div>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#fbbf24' }}>{entry.score}</div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Activity feed */}
-          {feed.length > 0 && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                {tx(g.recentGMs, lang)}
+            {feed.slice(0, 5).map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{item.address}</div>
+                <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `${item.streak}d` : 'GM'}</div>
               </div>
-              {feed.slice(0, 5).map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', borderBottom: i < 4 ? '1px solid var(--border)' : 'none' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{item.address}</div>
-                  <div style={{ fontSize: '11px', color: '#f97316' }}>{item.streak > 1 ? `${item.streak}d` : 'GM'}</div>
-                </div>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-        </div>
       </div>
     </AppLayout>
   )
