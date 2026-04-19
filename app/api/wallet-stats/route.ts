@@ -3,26 +3,42 @@ import { redis } from '@/lib/redis'
 
 export const dynamic = 'force-dynamic'
 
-const CACHE_TTL  = 300   // 5 min
-const BLOCKSCOUT = 'https://base.blockscout.com/api'
+const CACHE_TTL   = 180  // 3 min — short enough to self-heal after Blockscout hiccups
+const BLOCKSCOUT  = 'https://base.blockscout.com/api'
+
+async function fetchTxs(address: string): Promise<any[]> {
+  // Try Blockscout — primary source, free, no key
+  try {
+    const res = await fetch(
+      `${BLOCKSCOUT}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc`,
+      { signal: AbortSignal.timeout(8000), next: { revalidate: 0 } }
+    )
+    if (!res.ok) throw new Error(`Blockscout HTTP ${res.status}`)
+    const data = await res.json()
+    if (data.status === '1' && Array.isArray(data.result) && data.result.length > 0) {
+      return data.result
+    }
+  } catch (e) {
+    console.warn('[wallet-stats] Blockscout failed:', e)
+  }
+  return []
+}
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address')?.toLowerCase()
   if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 })
 
+  // Bust cache when ?refresh=1
+  const bust = req.nextUrl.searchParams.get('refresh') === '1'
   const cacheKey = `wallet-stats:${address}`
-  const cached = await redis.get(cacheKey)
-  if (cached) return NextResponse.json(cached)
+
+  if (!bust) {
+    const cached = await redis.get(cacheKey)
+    if (cached) return NextResponse.json(cached)
+  }
 
   try {
-    // Blockscout Etherscan-compatible API — free, no key, works on Base
-    const res = await fetch(
-      `${BLOCKSCOUT}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=100&sort=desc`,
-      { next: { revalidate: 0 } }
-    )
-    const data = await res.json()
-    const txs: any[] = data.status === '1' && Array.isArray(data.result) ? data.result : []
-
+    const txs = await fetchTxs(address)
     const txCount = txs.length
 
     // Active days
@@ -51,7 +67,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Unique contracts (has input data → contract call)
+    // Unique contracts
     const contracts = new Set(
       txs.filter((tx: any) => tx.to && tx.input && tx.input !== '0x').map((tx: any) => tx.to.toLowerCase())
     )
@@ -59,12 +75,10 @@ export async function GET(req: NextRequest) {
 
     // Gas used in ETH
     const gasEth = txs.reduce((sum: number, tx: any) => {
-      const used  = Number(tx.gasUsed  || 0)
-      const price = Number(tx.gasPrice || 0)
-      return sum + (used * price) / 1e18
+      return sum + (Number(tx.gasUsed || 0) * Number(tx.gasPrice || 0)) / 1e18
     }, 0)
 
-    // Last / first activity dates
+    // Last / first activity
     const lastActivity  = txs[0]
       ? new Date(Number(txs[0].timeStamp) * 1000).toISOString().slice(0, 10)
       : null
@@ -83,13 +97,18 @@ export async function GET(req: NextRequest) {
       lastActivity, firstActivity, walletAge, builderScore,
     }
 
-    await redis.setEx(cacheKey, CACHE_TTL, result)
+    // Only cache if we got real data — don't cache zeros from API failures
+    if (txCount > 0) {
+      await redis.setEx(cacheKey, CACHE_TTL, result)
+    }
+
     return NextResponse.json(result)
   } catch (err) {
-    console.error('wallet-stats error:', err)
+    console.error('[wallet-stats] Fatal error:', err)
+    // Return null values so UI shows — not 0
     return NextResponse.json({
-      txCount: 0, activeDays: 0, uniqueContracts: 0, currentStreak: 0,
-      gasEth: 0, lastActivity: null, firstActivity: null, walletAge: 0, builderScore: 0,
+      txCount: null, activeDays: null, uniqueContracts: null, currentStreak: null,
+      gasEth: null, lastActivity: null, firstActivity: null, walletAge: null, builderScore: null,
     })
   }
 }

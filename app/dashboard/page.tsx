@@ -41,11 +41,12 @@ export default function DashboardPage() {
   const d = TEXT.dashboard
   const c = TEXT.common
 
-  useEffect(() => {
+  async function loadData(bust = false) {
     if (!address) return
     setLoading(true)
+    const statsUrl = `/api/wallet-stats?address=${address}${bust ? '&refresh=1' : ''}`
     Promise.all([
-      fetch(`/api/wallet-stats?address=${address}`).then(r => r.json()),
+      fetch(statsUrl).then(r => r.json()),
       fetch(`/api/gm/streak?address=${address}`).then(r => r.json()),
       fetch(`/api/referral/code?address=${address}`).then(r => r.json()),
       fetch(`/api/referral/stats?address=${address}`).then(r => r.json()).catch(() => null),
@@ -60,7 +61,9 @@ export default function DashboardPage() {
         dailyEarnings:  refStats?.dailyEarnings ?? 0,
       })
     }).catch(() => {}).finally(() => setLoading(false))
-  }, [address])
+  }
+
+  useEffect(() => { loadData() }, [address])
 
   if (!isConnected) {
     return (
@@ -180,8 +183,12 @@ export default function DashboardPage() {
 
         {/* ── 3. WALLET ANALYTICS ──────────────────────────────────────── */}
         <div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600' }}>
-            {tx(d.analyticsTitle, lang)}
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{tx(d.analyticsTitle, lang)}</span>
+            <button onClick={() => loadData(true)} disabled={loading}
+              style={{ fontSize: '10px', color: loading ? 'var(--text-faint)' : '#60a5fa', background: 'none', border: 'none', cursor: loading ? 'default' : 'pointer', padding: '0', fontWeight: '600' }}>
+              {loading ? tx(c.loading, lang) : lang === 'tr' ? 'Yenile ↻' : 'Refresh ↻'}
+            </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' }}>
             <AnalyticCard label={tx(d.totalTx, lang)}         value={V(stats?.txCount)}        sub={tx(c.onBase, lang)} />
