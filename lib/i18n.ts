@@ -86,10 +86,10 @@ export const TEXT = {
         en_cta: 'Click to deploy a contract →', tr_cta: 'Kontrat deploy etmek için tıkla →',
       },
       { n: '5', href: '#referral', doneKey: 'invite',
-        en_title: 'Refer',         tr_title: 'Davet',
-        en_sub: 'Grow your network and earn from their activity',
-        tr_sub: 'Ağını büyüt ve aktivitelerinden kazan',
-        en_cta: 'Click to invite friends →', tr_cta: 'Arkadaşlarını davet et →',
+        en_title: 'Refer & Earn',   tr_title: 'Referans Getir',
+        en_sub: 'Invite friends. Earn 20% from every GM and Deploy they make.',
+        tr_sub: 'Arkadaşlarını davet et. Yaptıkları her GM ve Deploy işleminden %20 pay kazan.',
+        en_cta: 'Get your first referral →', tr_cta: 'İlk referansını getir →',
       },
     ],
 
@@ -104,14 +104,18 @@ export const TEXT = {
     builderScore:    t('Builder Score', 'Builder Puanı'),
     gmScore:         t('GM Score', 'GM Puanı'),
 
-    referralTitle:   t('Referral', 'Referral'),
-    referralCta:     t('Grow your network and earn 10% from their activity.', "Ağını büyüt ve referanslarının aktivitesinden %10 kazan."),
+    referralTitle:   t('Refer friends, earn 20% per action', 'Referans getir, her işlemden %20 kazan'),
+    referralCta:     t(
+      'You automatically earn 20% from every GM and Deploy your referrals make. Only active users generate income.',
+      'Referanslarının yaptığı her GM ve Deploy işleminden otomatik pay alırsın. Sadece aktif kullanıcılar kazandırır.'
+    ),
     totalReferrals:  t('Referrals', 'Referanslar'),
-    earnedEth:       t('Earned (ETH)', 'Kazanılan (ETH)'),
-    todayScore:      t('Today Score', 'Bugün Puan'),
+    earnedEth:       t('Total Earned', 'Toplam Kazanç'),
+    todayScore:      t("Today's Earnings", 'Bugünkü Kazanç'),
     commission:      t('Commission', 'Komisyon'),
     noReferrals:     t('No referrals yet', 'Henüz referans yok'),
     noReferralsSub:  t('Share your link to start earning.', 'Kazanmaya başlamak için linkini paylaş.'),
+    passiveIncome:   t('Every referral generates passive income for you.', 'Her getirdiğin kullanıcı sana pasif gelir oluşturur.'),
   },
 
   gm: {

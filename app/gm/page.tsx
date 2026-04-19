@@ -5,9 +5,9 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, encodeBuilderCode, REFERRAL_SHARE } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
-import { useReferral, calculateFee } from '@/hooks/useReferral'
+import { useReferral } from '@/hooks/useReferral'
 import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
 
@@ -127,9 +127,18 @@ export default function GmPage() {
   }, [data])
 
   const hasReferral = !!referrer && referrer !== address?.toLowerCase()
-  const fee = calculateFee(GM_FEE, hasReferral)
   const urgencyColor = getUrgencyColor(countdown.totalSeconds, data.gmmedToday)
   const isUrgent = !data.gmmedToday && data.streak > 0 && countdown.totalSeconds < 10800
+
+  // Resolve referrer address from code if needed
+  async function getReferrerAddress(): Promise<string | null> {
+    if (!referrer) return null
+    if (referrer.startsWith('0x')) return referrer.toLowerCase()
+    const res = await fetch(`/api/referral/code?code=${referrer}`).catch(() => null)
+    if (!res?.ok) return null
+    const data = await res.json()
+    return data.address?.toLowerCase() ?? null
+  }
 
   async function handleGM() {
     if (!address || !publicClient || status === 'sending') return
@@ -140,14 +149,44 @@ export default function GmPage() {
 
     try {
       const gmTxData = encodeBuilderCode(BUILDER_CODE)
-      console.log('[BaseAmp] GM TX data:', gmTxData, '| decoded:', BUILDER_CODE)
-      const hash = await sendTransactionAsync({
-        to: OWNER_ADDRESS,
-        value: fee,
-        data: gmTxData,
-        chainId: base.id,
-      })
-      await publicClient.waitForTransactionReceipt({ hash })
+      console.log('[BaseAmp] GM TX data (builder code):', gmTxData)
+
+      // Resolve referrer address
+      const referrerAddr = hasReferral ? await getReferrerAddress() : null
+
+      if (referrerAddr) {
+        // Split: 20% to referrer, 80% to platform — two separate TXs
+        const referrerShare = (GM_FEE * REFERRAL_SHARE) / 100n
+        const platformShare = GM_FEE - referrerShare
+
+        console.log(`[BaseAmp] GM split: referrer=${referrerShare} platform=${platformShare}`)
+
+        // Referrer TX (plain ETH — no builder data needed, referrer is not a contract)
+        const refHash = await sendTransactionAsync({
+          to: referrerAddr as `0x${string}`,
+          value: referrerShare,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash: refHash })
+
+        // Platform TX (with builder code)
+        const hash = await sendTransactionAsync({
+          to: OWNER_ADDRESS,
+          value: platformShare,
+          data: gmTxData,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash })
+      } else {
+        // No referrer — full fee to platform with builder code
+        const hash = await sendTransactionAsync({
+          to: OWNER_ADDRESS,
+          value: GM_FEE,
+          data: gmTxData,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
 
       const res = await fetch(`/api/gm/record?address=${address}`, { method: 'POST' })
       const result = await res.json()

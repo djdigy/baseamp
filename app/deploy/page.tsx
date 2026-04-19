@@ -7,7 +7,8 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, DEPLOY_FEE, REFERRAL_SHARE } from '@/lib/constants'
+import { useReferral } from '@/hooks/useReferral'
 import * as ERC8021 from 'ox/erc8021'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155' | 'Counter' | 'Greeter' | 'Logbook'
@@ -102,14 +103,17 @@ export default function DeployPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
   const { sendTransactionAsync } = useSendTransaction()
+  const { referrer } = useReferral()
   const { lang } = useLang()
   const d = TEXT.deploy
+
+  const hasReferral = !!referrer && referrer?.toLowerCase() !== address?.toLowerCase()
 
   const [selectedId, setSelectedId] = useState<DeployType>('Counter')
   const [fields, setFields] = useState<Record<string, string>>({
     name: '', symbol: '', supply: '1000000', decimals: '18', uri: '', greeting: 'Hello, Base!',
   })
-  const [status, setStatus] = useState<'idle' | 'deploying' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'fee' | 'deploying' | 'success' | 'error'>('idle')
   const [txHash, setTxHash] = useState('')
   const [contractAddr, setContractAddr] = useState('')
   const [error, setError] = useState('')
@@ -121,21 +125,74 @@ export default function DeployPage() {
 
   async function handleDeploy() {
     if (!address || !publicClient) return
-    setStatus('deploying'); setError(''); setTxHash(''); setContractAddr('')
+    setStatus('fee'); setError(''); setTxHash(''); setContractAddr('')
     try {
-      // Deploy with ERC-8021 attribution suffix appended to bytecode
+      // Resolve referrer address (code → address if needed)
+      let referrerAddr: string | null = null
+      if (hasReferral && referrer) {
+        if (referrer.startsWith('0x')) {
+          referrerAddr = referrer.toLowerCase()
+        } else {
+          const res = await fetch(`/api/referral/code?code=${referrer}`).catch(() => null)
+          if (res?.ok) { const d = await res.json(); referrerAddr = d.address?.toLowerCase() ?? null }
+        }
+      }
+
+      // Fee TX — split 20% referrer / 80% platform
+      if (referrerAddr) {
+        const referrerShare = (DEPLOY_FEE * REFERRAL_SHARE) / 100n
+        const platformShare = DEPLOY_FEE - referrerShare
+        console.log(`[BaseAmp] Deploy fee split: ref=${referrerShare} platform=${platformShare}`)
+
+        // Referrer share — plain ETH
+        const refHash = await sendTransactionAsync({
+          to: referrerAddr as `0x${string}`,
+          value: referrerShare,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash: refHash })
+
+        // Platform share — with builder code
+        const feeHash = await sendTransactionAsync({
+          to: OWNER_ADDRESS,
+          value: platformShare,
+          data: `0x${Buffer.from(BUILDER_CODE).toString('hex')}` as `0x${string}`,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash: feeHash })
+      } else {
+        // No referrer — full fee to platform with builder code
+        const feeHash = await sendTransactionAsync({
+          to: OWNER_ADDRESS,
+          value: DEPLOY_FEE,
+          data: `0x${Buffer.from(BUILDER_CODE).toString('hex')}` as `0x${string}`,
+          chainId: base.id,
+        })
+        await publicClient.waitForTransactionReceipt({ hash: feeHash })
+      }
+
+      // Deploy contract with ERC-8021 attribution suffix
       const { bytecode, args } = selected.encode(fields)
       const suffix = ERC8021.Attribution.toDataSuffix({ codes: [BUILDER_CODE] }) as `0x${string}`
       const data = args === '0x'
         ? concat([bytecode, suffix]) as `0x${string}`
         : concat([bytecode, args, suffix]) as `0x${string}`
 
-      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes | suffix:', suffix)
+      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes | ERC-8021 suffix:', suffix)
 
       const deployHash = await sendTransactionAsync({ data, chainId: base.id })
       setTxHash(deployHash)
       const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })
       if (receipt.contractAddress) setContractAddr(receipt.contractAddress)
+
+      // Record referral earnings
+      if (referrerAddr) {
+        await fetch('/api/referral/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referrer: referrerAddr, referee: address, feeEth: Number(DEPLOY_FEE) / 1e18 }),
+        }).catch(() => {})
+      }
 
       setStatus('success')
     } catch (err: unknown) {
