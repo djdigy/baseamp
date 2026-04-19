@@ -5,7 +5,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, PLATFORM_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
+import { BUILDER_CODE, PLATFORM_ADDRESS, GM_FEE, buildERC8021Data } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
@@ -136,15 +136,16 @@ export default function GmPage() {
     setStreakLost(false)
 
     try {
-      const gmTxData = encodeBuilderCode(BUILDER_CODE)
-      console.log('[BaseAmp] GM TX | builder code:', gmTxData, '| fee:', Number(GM_FEE) / 1e18, 'ETH')
+      // Build ERC-8021 compliant data:
+      // format: [builder_code_utf8][length][schema_id=0x00][ERC_sentinel]
+      // = 0x62635f67726a693537366d 0b 00 80218021802180218021802180218021
+      const txData = buildERC8021Data()
+      console.log('[BaseAmp] GM TX data (ERC-8021):', txData, '| bytes:', (txData.length - 2) / 2)
 
-      // Single TX — full fee to platform with builder code embedded
-      // Referral split (20%) is tracked server-side and paid out by platform
       const hash = await sendTransactionAsync({
         to: PLATFORM_ADDRESS,
         value: GM_FEE,
-        data: gmTxData,
+        data: txData,
         chainId: base.id,
       })
       await publicClient.waitForTransactionReceipt({ hash })

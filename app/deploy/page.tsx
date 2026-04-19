@@ -7,8 +7,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, PLATFORM_ADDRESS, DEPLOY_FEE, encodeBuilderCode } from '@/lib/constants'
-import * as ERC8021 from 'ox/erc8021'
+import { BUILDER_CODE, PLATFORM_ADDRESS, DEPLOY_FEE, buildERC8021Data } from '@/lib/constants'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155' | 'Counter' | 'Greeter' | 'Logbook'
 
@@ -124,24 +123,29 @@ export default function DeployPage() {
     if (!address || !publicClient) return
     setStatus('fee'); setError(''); setTxHash(''); setContractAddr('')
     try {
-      // Fee TX — builder code in data, full fee to platform
+      // Fee TX — ERC-8021 data in calldata
+      const erc8021Data = buildERC8021Data()
+      console.log('[BaseAmp] Fee TX data (ERC-8021):', erc8021Data)
       const feeHash = await sendTransactionAsync({
         to: PLATFORM_ADDRESS,
         value: DEPLOY_FEE,
-        data: encodeBuilderCode(BUILDER_CODE),
+        data: erc8021Data,
         chainId: base.id,
       })
       await publicClient.waitForTransactionReceipt({ hash: feeHash })
       setStatus('deploying')
 
-      // Deploy contract with ERC-8021 attribution suffix
+      // Deploy contract TX — bytecode + constructor args + ERC-8021 suffix
       const { bytecode, args } = selected.encode(fields)
-      const suffix = ERC8021.Attribution.toDataSuffix({ codes: [BUILDER_CODE] }) as `0x${string}`
+      // ERC-8021 suffix = toDataSuffix({ codes: [BUILDER_CODE] })
+      // Same format as erc8021Data: [code][len][schema][sentinel]
+      const suffix = erc8021Data  // identical format, append to bytecode
       const data = args === '0x'
         ? concat([bytecode, suffix]) as `0x${string}`
         : concat([bytecode, args, suffix]) as `0x${string}`
 
-      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes | ERC-8021:', suffix)
+      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes')
+      console.log('[BaseAmp] Ends with ERC-8021 sentinel:', data.toLowerCase().endsWith('80218021802180218021802180218021'))
 
       const deployHash = await sendTransactionAsync({ data, chainId: base.id })
       setTxHash(deployHash)
