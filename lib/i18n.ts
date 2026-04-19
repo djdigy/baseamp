@@ -187,6 +187,7 @@ export const TEXT = {
     noParams:     t('No parameters needed — ready to deploy.', "Parametre gerekmez — deploy'a hazır."),
     network:      t('Network: Base Mainnet', 'Ağ: Base Mainnet'),
     builderCode:  t('Builder Code:', 'Builder Kodu:'),
+    builderAttribution: t('Builder attribution active', 'Builder attribution aktif'),
     refDiscount:  t('Referral discount applied', 'Referral indirimi uygulandı'),
     preparing:    t('Preparing deployment...', 'Deploy hazırlanıyor...'),
     deploying:    t('Deploying to Base...', "Base'e deploy ediliyor..."),
@@ -194,6 +195,7 @@ export const TEXT = {
     preparingBtn: t('Preparing...', 'Hazırlanıyor...'),
     deployingBtn: t('Deploying...', 'Deploy ediliyor...'),
     success:      t('deployed successfully', 'başarıyla deploy edildi'),
+    viewOnBasescan: t('View on Basescan →', "Basescan'da Gör →"),
   },
 }
 
