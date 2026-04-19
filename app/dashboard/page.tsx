@@ -63,7 +63,7 @@ export default function DashboardPage() {
     }).catch(() => {}).finally(() => setLoading(false))
   }
 
-  useEffect(() => { loadData() }, [address])
+  useEffect(() => { loadData(true) }, [address])
 
   if (!isConnected) {
     return (
@@ -202,6 +202,13 @@ export default function DashboardPage() {
             <AnalyticCard label={tx(d.builderScore, lang)} value={V(stats?.builderScore)} />
             <AnalyticCard label={tx(d.gmScore, lang)}      value={loading ? '...' : (totalScore?.toString() ?? '—')} sub={streak > 0 ? `${streak} ${tx(c.dayStreak, lang)}` : undefined} />
           </div>
+          {!loading && stats && stats.txCount === 0 && (
+            <div style={{ fontSize: '12px', color: 'var(--text-faint)', paddingTop: '8px', lineHeight: '1.6' }}>
+              {lang === 'tr'
+                ? 'Bu cüzdanda Base üzerinde işlem bulunamadı. GM göndererek aktiviteni başlatabilirsin.'
+                : 'No transactions found on Base for this wallet. Send your first GM to start building activity.'}
+            </div>
+          )}
         </div>
 
         {/* ── 4. REFERRAL ──────────────────────────────────────────────── */}
