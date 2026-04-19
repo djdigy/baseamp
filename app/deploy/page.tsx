@@ -16,11 +16,6 @@ import * as ERC8021 from 'ox/erc8021'
 // runtime: 92 bytes at offset 27 (EVM zero-pads to 165)
 const COUNTER_BYTECODE = '0x6080604052348015600e575f80fd5b5060a58061001b5f395ff3fe6080604052348015600e575f80fd5b50600436106030575f3560e01c8063d09de08a146034578063d826f88f14603c575b5f80fd5b603a6044565b005b60426053565b005b5f5460018101915081905550565b5f8081905550565b00' as `0x${string}`
 
-// ─── UI helper ────────────────────────────────────────────────────────────────
-function InfoRow({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{children}</div>
-}
-
 export default function DeployPage() {
   const { address, isConnected } = useAccount()
   const publicClient = usePublicClient()
@@ -118,9 +113,9 @@ export default function DeployPage() {
           </div>
 
           <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <InfoRow>{tx(d.network, lang)}</InfoRow>
-            <InfoRow style={{ color: '#22c55e' }}>✓ {tx(d.builderAttribution, lang)}</InfoRow>
-            {hasReferral && <InfoRow style={{ color: '#4ade80' }}>{tx(d.refDiscount, lang)}</InfoRow>}
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{tx(d.network, lang)}</div>
+            <div style={{ fontSize: '11px', color: '#22c55e' }}>✓ {tx(d.builderAttribution, lang)}</div>
+            {hasReferral && <div style={{ fontSize: '11px', color: '#4ade80' }}>{tx(d.refDiscount, lang)}</div>}
           </div>
 
           {/* Status */}
