@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description: 'Base Network Dashboard — Earn, Deploy, GM',
     images: ['/og.png'],
   },
+  other: {
+    'base:app_id': '69da8e51ed56423f0cd3e5b9',
+  },
 }
 
 // Runs before paint: uses saved pref or falls back to system preference
@@ -19,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="base:app_id" content="69da8e51ed56423f0cd3e5b9" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
