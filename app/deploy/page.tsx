@@ -7,7 +7,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, DEPLOY_FEE, REFERRAL_SHARE } from '@/lib/constants'
+import { BUILDER_CODE, OWNER_ADDRESS, DEPLOY_FEE } from '@/lib/constants'
 import { useReferral } from '@/hooks/useReferral'
 import * as ERC8021 from 'ox/erc8021'
 
@@ -138,38 +138,16 @@ export default function DeployPage() {
         }
       }
 
-      // Fee TX — split 20% referrer / 80% platform
-      if (referrerAddr) {
-        const referrerShare = (DEPLOY_FEE * REFERRAL_SHARE) / 100n
-        const platformShare = DEPLOY_FEE - referrerShare
-        console.log(`[BaseAmp] Deploy fee split: ref=${referrerShare} platform=${platformShare}`)
-
-        // Referrer share — plain ETH
-        const refHash = await sendTransactionAsync({
-          to: referrerAddr as `0x${string}`,
-          value: referrerShare,
-          chainId: base.id,
-        })
-        await publicClient.waitForTransactionReceipt({ hash: refHash })
-
-        // Platform share — with builder code
-        const feeHash = await sendTransactionAsync({
-          to: OWNER_ADDRESS,
-          value: platformShare,
-          data: `0x${Buffer.from(BUILDER_CODE).toString('hex')}` as `0x${string}`,
-          chainId: base.id,
-        })
-        await publicClient.waitForTransactionReceipt({ hash: feeHash })
-      } else {
-        // No referrer — full fee to platform with builder code
-        const feeHash = await sendTransactionAsync({
-          to: OWNER_ADDRESS,
-          value: DEPLOY_FEE,
-          data: `0x${Buffer.from(BUILDER_CODE).toString('hex')}` as `0x${string}`,
-          chainId: base.id,
-        })
-        await publicClient.waitForTransactionReceipt({ hash: feeHash })
-      }
+      // Fee TX — single TX to platform with builder code embedded
+      // Referral split tracked server-side (20% credited to referrer in Redis)
+      const feeHash = await sendTransactionAsync({
+        to: OWNER_ADDRESS,
+        value: DEPLOY_FEE,
+        data: `0x${Buffer.from(BUILDER_CODE).toString('hex')}` as `0x${string}`,
+        chainId: base.id,
+      })
+      await publicClient.waitForTransactionReceipt({ hash: feeHash })
+      setStatus('deploying')
 
       // Deploy contract with ERC-8021 attribution suffix
       const { bytecode, args } = selected.encode(fields)
@@ -178,14 +156,14 @@ export default function DeployPage() {
         ? concat([bytecode, suffix]) as `0x${string}`
         : concat([bytecode, args, suffix]) as `0x${string}`
 
-      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes | ERC-8021 suffix:', suffix)
+      console.log('[BaseAmp] Deploy', selected.title, '|', (data.length - 2) / 2, 'bytes | ERC-8021:', suffix)
 
       const deployHash = await sendTransactionAsync({ data, chainId: base.id })
       setTxHash(deployHash)
       const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })
       if (receipt.contractAddress) setContractAddr(receipt.contractAddress)
 
-      // Record referral earnings
+      // Record referral earnings server-side
       if (referrerAddr) {
         await fetch('/api/referral/register', {
           method: 'POST',
@@ -258,7 +236,6 @@ export default function DeployPage() {
 
           <div style={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 12px', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <div style={{ color: 'var(--text-muted)' }}>{tx(d.network, lang)}</div>
-            <div style={{ color: '#22c55e' }}>✓ {tx(d.builderAttribution, lang)}</div>
           </div>
 
           {busy && (

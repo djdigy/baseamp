@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address')?.toLowerCase()
   if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 })
 
+  // Referrer passed directly from frontend (resolved from code or address)
+  const referrerParam = req.nextUrl.searchParams.get('referrer')?.toLowerCase() ?? null
+
   const today     = new Date().toISOString().slice(0, 10)
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
 
@@ -49,8 +52,9 @@ export async function POST(req: NextRequest) {
   // Referrer reward — only on first GM of day, only if referee active in last 7 days
   let referralBonus = 0
   if (calc.isFirstToday) {
-    const referrerAddr = await redis.get<string>(`referred_by:${address}`)
-    if (referrerAddr) {
+    // Use param-provided referrer first, fall back to stored mapping
+    const referrerAddr = referrerParam ?? await redis.get<string>(`referred_by:${address}`)
+    if (referrerAddr && referrerAddr !== address) {
       // Activity check: referee must have GM'd in last 7 days
       const refereeGm = await redis.get<GmData>(`gm:${address}`)
       const lastGmDate = refereeGm?.lastDate ?? ''

@@ -18,43 +18,54 @@ export const TEXT = {
     welcome:    t('Welcome to BaseAmp', "BaseAmp'a Hoş Geldin"),
     welcomeSub: t('Connect your wallet to start.', 'Başlamak için cüzdanını bağla.'),
 
-    guideTitle: t('Airdrop Guide', 'Airdrop Rehberi'),
+    guideTitle: t('Airdrop Rehberi', 'Airdrop Rehberi'),
 
     guideWhy: t(
-      'Base rewards real users — not bots, not one-day spammers. What matters is consistent activity spread across many days, using different apps.',
-      "Base gerçek kullanıcıları ödüllendiriyor — botları ve tek günde işlem yapanları değil. Önemli olan: farklı uygulamalar kullanarak pek çok güne yayılmış düzenli aktivite."
-    ),
-    guidePrinciple1: t(
-      'Doing 100 transactions in one day signals a bot, not a user. One transaction per day, every day, is worth far more.',
-      'Tek günde 100 işlem yapmak bot sinyali verir. Her gün 1 işlem yapmak çok daha değerlidir.'
-    ),
-    guidePrinciple2: t(
-      'You need both onchain activity (transactions, DeFi, contracts) and social presence (Farcaster, Base Name, Guild).',
-      'Hem onchain aktivite (işlemler, DeFi, kontratlar) hem de sosyal varlık (Farcaster, Base Name, Guild) gereklidir.'
-    ),
-    guidePrinciple3: t(
-      'This dashboard exists to help you build that activity footprint — consistently, over time.',
-      'Bu dashboard tam da bunu yapmana yardımcı olmak için var — düzenli ve zamanla.'
-    ),
-    guideCta: t(
-      'Start with Step 1 and move forward over time ↓',
-      'Adım 1 ile başla ve zamanla ilerle ↓'
+      'Base is a Layer-2 network built by Coinbase and is growing its ecosystem. There is no officially confirmed token yet, but the possibility of an airdrop rewarding early users is strong.\n\nWhat matters is not doing many transactions at once — it is looking like a real user who regularly uses the network.\n\nUse different apps on different days, be socially and onchain active. BaseAmp helps you track this process and stay consistent.',
+      "Base, Coinbase tarafından geliştirilen bir Layer-2 ağıdır ve kendi ekosistemini büyütmeye devam ediyor.\nHenüz resmi olarak doğrulanmış bir token yok, ancak erken kullanıcıların ödüllendirileceği bir airdrop ihtimali güçlü.\n\nBu yüzden önemli olan tek seferlik işlem yapmak değil, ağı düzenli kullanan gerçek kullanıcı gibi görünmek.\n\nFarklı günlerde farklı uygulamaları kullan, sosyal ve onchain aktif ol. BaseAmp bu süreci takip etmeni ve düzenli kalmanı sağlar."
     ),
 
-    guideExternalTitle: t(
-      'To fully qualify, you ALSO need:',
-      'Tam anlamıyla nitelendirilebilmek için AYRICA:'
+    guidePrinciple1: t(
+      'Spread activity over time — not all at once',
+      'Tek seferde çok işlem değil → zamana yay'
     ),
-    guideExternal: [
-      { en: 'Install BaseApp — connect your wallet to the official Base app', tr: 'BaseApp kur — resmi Base uygulamasına cüzdanını bağla', url: 'https://base.app/invite/cihan0xeth/XFFDZL1D' },
-      { en: 'Join Guild — connect ALL your wallets and social accounts', tr: "Guild'e katıl — tüm cüzdan ve hesaplarını bağla (kritik)", url: 'https://guild.xyz/base' },
-      { en: 'Use Farcaster — post, interact, build social presence', tr: 'Farcaster kullan — paylaş, etkileş, sosyal varlık oluştur', url: 'https://farcaster.xyz/~/code/7BSPLN' },
-      { en: 'Get a Base Name — your permanent identity on Base', tr: "Base Name al — Base'teki kalıcı kimliğin", url: 'https://www.base.org/names' },
+    guidePrinciple2: t(
+      'Onchain + social activity together',
+      'Onchain + sosyal birlikte olmalı'
+    ),
+    guidePrinciple3: t(
+      'Consistency is the strongest signal',
+      'Süreklilik en güçlü sinyal'
+    ),
+
+    guideCta: t('See detailed guide', 'Detaylı rehberi gör'),
+
+    guideDetailTitle: t('Detailed Activity Guide', 'Detaylı Aktivite Rehberi'),
+    guideDetailItems: [
+      t('GM → daily transaction, the simplest streak signal', 'GM → günlük işlem, en basit seri sinyali'),
+      t('Swap / Bridge → shows network usage across different days', 'Swap / Bridge → farklı günlerde ağ kullanımını gösterir'),
+      t('DeFi → capital interaction, not just transfers', 'DeFi → sermaye etkileşimi, sadece transfer değil'),
+      t('Deploy → strongest onchain signal, shows builder behavior', 'Deploy → en güçlü onchain sinyal, builder davranışı gösterir'),
+      t('Referral → earn 20% from every action your referrals take', 'Referral → referanslarının her işleminden %20 kazan'),
+      t('BaseApp / Guild / Farcaster / Base Name → social + identity layer', 'BaseApp / Guild / Farcaster / Base Name → sosyal + kimlik katmanı'),
+      t('Timing → small but consistent, not bursts', 'Zamanlama → küçük ama sürekli, ani yığınlar değil'),
     ],
-    guideWarning: t(
-      'If you skip these, your activity may not be recognized.',
-      'Bunları atlarsan, aktiviten tanınmayabilir.'
+
+    boostTitle: t('Strengthen your profile (recommended)', 'Aktiviteni güçlendirmek için (önerilir)'),
+    boostDesc:  t(
+      'These steps make your profile stronger and create a clearer user signal.',
+      'Bu adımlar profilini daha güçlü hale getirir ve daha net kullanıcı sinyali oluşturur.'
     ),
+    boostNote: t(
+      'Completing these makes your profile more visible.',
+      'Bunları tamamlamak profilini daha görünür hale getirir.'
+    ),
+    boostItems: [
+      { en: 'Install BaseApp → enter the ecosystem', tr: 'BaseApp kur → ekosisteme giriş', url: 'https://base.app/invite/cihan0xeth/XFFDZL1D' },
+      { en: "Join Guild → connect ALL your accounts (very important)", tr: "Guild'e katıl → tüm hesaplarını bağla (çok önemli)", url: 'https://guild.xyz/base' },
+      { en: 'Use Farcaster → build social presence', tr: 'Farcaster kullan → sosyal aktivite oluştur', url: 'https://farcaster.xyz/~/code/7BSPLN' },
+      { en: 'Get a Base Name → create your identity', tr: 'Base Name al → kimliğini oluştur', url: 'https://www.base.org/names' },
+    ],
 
     stepsIntro: t(
       'These 5 steps are your core activity loop. Do them consistently over time — not all at once.',
@@ -63,37 +74,38 @@ export const TEXT = {
     steps: [
       { n: '1', href: '/gm',      doneKey: 'gm',
         en_title: 'GM',            tr_title: 'GM',
-        en_sub: 'Daily onchain signal — consistency matters more than volume',
-        tr_sub: 'Günlük onchain sinyal — hız değil, süreklilik önemli',
-        en_cta: 'Click to send your daily GM →', tr_cta: 'Günlük GM göndermek için tıkla →',
+        en_sub: 'Send a daily TX — consistency beats volume',
+        tr_sub: 'Her gün küçük bir işlem yap → süreklilik en güçlü sinyaldir',
+        en_cta: 'Send daily GM →', tr_cta: 'Günlük GM gönder →',
       },
       { n: '2', href: '/swap',    doneKey: 'swap',
         en_title: 'Swap / Bridge', tr_title: 'Swap / Bridge',
-        en_sub: 'Use DEXs and bridge assets across different days',
-        tr_sub: 'Farklı günlerde DEX ve köprü kullan',
-        en_cta: 'Click to use DEXs and bridge →', tr_cta: 'DEX ve köprü için tıkla →',
+        en_sub: 'Use on different days — usage matters, not one burst',
+        tr_sub: 'Farklı günlerde işlem yap → tek sefer değil, kullanım önemli',
+        en_cta: 'DEX and bridge →', tr_cta: 'DEX ve köprü için tıkla →',
       },
       { n: '3', href: '/earn',    doneKey: 'earn',
         en_title: 'Earn',          tr_title: 'Kazan',
-        en_sub: 'Use DeFi protocols to show capital usage',
-        tr_sub: "DeFi'ye yatır — sermaye etkileşimi göster",
-        en_cta: 'Click to use DeFi →', tr_cta: "DeFi için tıkla →",
+        en_sub: 'Use DeFi — show capital interaction, not just transfers',
+        tr_sub: 'DeFi kullan → sadece işlem değil, sermaye etkileşimi göster',
+        en_cta: 'DeFi →', tr_cta: 'DeFi için tıkla →',
       },
       { n: '4', href: '/deploy',  doneKey: 'deploy',
         en_title: 'Deploy',        tr_title: 'Deploy',
-        en_sub: 'Deploy contracts — strongest onchain signal',
-        tr_sub: 'Kontrat deploy et — en güçlü onchain sinyal',
-        en_cta: 'Click to deploy a contract →', tr_cta: 'Kontrat deploy etmek için tıkla →',
+        en_sub: 'Deploy a contract — strongest onchain signal',
+        tr_sub: 'Kontrat deploy et → en güçlü onchain sinyal',
+        en_cta: 'Deploy contract →', tr_cta: 'Kontrat deploy et →',
       },
       { n: '5', href: '#referral', doneKey: 'invite',
         en_title: 'Refer & Earn',   tr_title: 'Referans Getir',
-        en_sub: 'Invite friends. Earn 20% from every GM and Deploy they make.',
-        tr_sub: 'Arkadaşlarını davet et. Yaptıkları her GM ve Deploy işleminden %20 pay kazan.',
+        en_sub: 'Refer friends — earn 20% from every action they take',
+        tr_sub: 'Referans getir → her işlemden %20 pay kazan',
         en_cta: 'Get your first referral →', tr_cta: 'İlk referansını getir →',
       },
     ],
 
     analyticsTitle:  t('Your Activity', 'Aktiviten'),
+    streakWarningMsg: t('Send GM today or your streak resets', 'Bugün işlem yapmazsan serin sıfırlanır'),
     totalTx:         t('Activity Volume', 'Aktivite Hacmi'),
     activeDays:      t('Consistency Signal', 'Süreklilik Sinyali'),
     lastActivity:    t('Last Activity', 'Son Aktivite'),
