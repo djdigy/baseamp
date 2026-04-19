@@ -109,29 +109,37 @@ export default function EarnPage() {
   useEffect(() => {
     async function loadVaults() {
       setLoading(true)
-      let morphoVaults: Vault[] = MORPHO_FALLBACK
+
+      // Fallback shows — for APY so we never show stale numbers as if live
+      const SAFE_FALLBACK: Vault[] = MORPHO_FALLBACK.map(v => ({ ...v, apy: '—' }))
+      let morphoVaults: Vault[] = SAFE_FALLBACK
 
       try {
-        const query = `{ vaults(where: { chainId_in: [8453] } orderBy: TotalAssetsUsd orderDirection: Desc first: 20) { items { name address symbol state { apy } asset { symbol } } } }`
+        // Use netApy (yield after fees) — matches what user sees on protocol page
+        const query = `{ vaults(where: { chainId_in: [8453] } orderBy: TotalAssetsUsd orderDirection: Desc first: 30) { items { name address symbol state { netApy totalAssetsUsd } asset { symbol } } } }`
         const res = await fetch('https://blue-api.morpho.org/graphql', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query }),
+          signal: AbortSignal.timeout(8000),
         })
         if (res.ok) {
           const data = await res.json()
           const items = data?.data?.vaults?.items || []
           if (items.length > 0) {
             morphoVaults = items.map((v: any) => {
-              const sym = (v.symbol || '').toLowerCase()
+              const sym      = (v.symbol || '').toLowerCase()
               const assetSym = v.asset?.symbol || 'USDC'
+              const netApy   = v.state?.netApy
+              const tvlUsd   = v.state?.totalAssetsUsd
               return {
                 protocol: 'Morpho' as const,
                 name: v.name,
                 address: v.address,
                 asset: assetSym,
-                apy: v.state?.apy ? (v.state.apy * 100).toFixed(1) : '0.0',
-                tvl: '—',
+                // netApy is the number users see on Morpho UI — use it, not gross apy
+                apy: netApy != null && netApy > 0 ? (netApy * 100).toFixed(1) : '—',
+                tvl: tvlUsd != null ? (tvlUsd / 1_000_000).toFixed(1) : '—',
                 chain: 'Base',
                 url: `https://app.morpho.org/base/vault/${v.address}/${sym}`,
                 isBtc: ['cbbtc', 'wbtc', 'tbtc'].some(b => sym.includes(b) || assetSym.toLowerCase().includes(b)),
@@ -141,7 +149,7 @@ export default function EarnPage() {
             setSource('live')
           }
         }
-      } catch { /* fallback kullan */ }
+      } catch { /* show dashes — never stale numbers */ }
 
       const all = [...morphoVaults, ...AAVE_VAULTS]
       all.sort((a, b) => {
