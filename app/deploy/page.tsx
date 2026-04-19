@@ -187,6 +187,11 @@ export default function DeployPage() {
         ? concat([bytecode, builderSuffix]) as `0x${string}`
         : concat([bytecode, args, builderSuffix]) as `0x${string}`
 
+      // Verify builder code is embedded
+      console.log('[BaseAmp] DEPLOY TX data tail:', deployData.slice(-22)) // last 11 bytes = builder code
+      console.log('[BaseAmp] Builder code hex:   ', builderSuffix)
+      console.log('[BaseAmp] Builder embedded:   ', deployData.endsWith(builderSuffix.slice(2)))
+
       const deployHash = await sendTransactionAsync({ data: deployData, chainId: base.id })
       setTxHash(deployHash)
       const receipt = await publicClient.waitForTransactionReceipt({ hash: deployHash })

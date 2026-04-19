@@ -139,10 +139,12 @@ export default function GmPage() {
     setStreakLost(false)
 
     try {
+      const gmTxData = encodeBuilderCode(BUILDER_CODE)
+      console.log('[BaseAmp] GM TX data:', gmTxData, '| decoded:', BUILDER_CODE)
       const hash = await sendTransactionAsync({
         to: OWNER_ADDRESS,
         value: fee,
-        data: encodeBuilderCode(BUILDER_CODE),
+        data: gmTxData,
         chainId: base.id,
       })
       await publicClient.waitForTransactionReceipt({ hash })
