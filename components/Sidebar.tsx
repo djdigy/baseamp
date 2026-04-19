@@ -3,42 +3,75 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAccount } from 'wagmi'
+import { useState, useEffect } from 'react'
 
 const NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: '◈', group: 'Main' },
   { href: '/earn',      label: 'Earn',      icon: '💰', group: 'Main', badge: 'NEW' },
   { href: '/swap',      label: 'Swap',      icon: '🔁', group: 'Main' },
   { href: '/deploy',    label: 'Deploy',    icon: '🚀', group: 'Tools' },
-  { href: '/gm',        label: 'GM',        icon: '☀',    group: 'Tools' },
+  { href: '/gm',        label: 'GM',        icon: '☀',  group: 'Tools' },
 ]
 
+// ── Bottom tab bar for mobile ─────────────────────────────────────────────────
+export function MobileTabBar() {
+  const pathname = usePathname()
+  return (
+    <nav style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+      background: 'var(--bg-card)', borderTop: '1px solid var(--border)',
+      display: 'flex', alignItems: 'stretch',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    }}>
+      {NAV.map(item => {
+        const active = pathname === item.href
+        return (
+          <Link key={item.href} href={item.href} style={{ flex: 1, textDecoration: 'none' }}>
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: '10px 4px 8px',
+              color: active ? '#3b82f6' : 'var(--text-faint)',
+              position: 'relative',
+            }}>
+              {active && (
+                <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '24px', height: '2px', background: '#3b82f6', borderRadius: '0 0 2px 2px' }} />
+              )}
+              <span style={{ fontSize: '18px', lineHeight: 1, marginBottom: '3px' }}>{item.icon}</span>
+              <span style={{ fontSize: '9px', fontWeight: active ? '700' : '500', letterSpacing: '0.02em' }}>{item.label}</span>
+              {item.badge && (
+                <span style={{ position: 'absolute', top: '6px', right: '20%', background: '#3b82f6', color: 'white', fontSize: '7px', padding: '1px 4px', borderRadius: '99px', fontWeight: '700' }}>
+                  {item.badge}
+                </span>
+              )}
+            </div>
+          </Link>
+        )
+      })}
+    </nav>
+  )
+}
+
+// ── Desktop sidebar (hidden on mobile) ───────────────────────────────────────
 export function Sidebar() {
   const pathname = usePathname()
   const { address } = useAccount()
 
   return (
     <aside style={{
-      width: '220px',
+      width: '220px', flexShrink: 0,
       background: 'var(--bg-card)',
       borderRight: '1px solid var(--border)',
       display: 'flex', flexDirection: 'column',
-      minHeight: '100vh', flexShrink: 0,
+      minHeight: '100vh',
     }}>
       {/* Logo */}
       <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: '32px', height: '32px', borderRadius: '8px',
-          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '16px', fontWeight: '900', color: 'white', flexShrink: 0,
-        }}>B</div>
+        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: 'white', flexShrink: 0 }}>B</div>
         <div>
           <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: 1.2 }}>
             Base<span style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Amp</span>
           </div>
-          <div style={{ fontSize: '9px', color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            Base Dashboard
-          </div>
+          <div style={{ fontSize: '9px', color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Base Dashboard</div>
         </div>
       </div>
 
@@ -53,14 +86,7 @@ export function Sidebar() {
               const active = pathname === item.href
               return (
                 <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
-                    fontSize: '13px',
-                    color: active ? '#60a5fa' : 'var(--text-muted)',
-                    background: active ? 'var(--bg-card2)' : 'transparent',
-                    cursor: 'pointer',
-                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', marginBottom: '2px', fontSize: '13px', color: active ? '#60a5fa' : 'var(--text-muted)', background: active ? 'var(--bg-card2)' : 'transparent', cursor: 'pointer' }}>
                     <span style={{ fontSize: '14px' }}>{item.icon}</span>
                     {item.label}
                     {item.badge && (

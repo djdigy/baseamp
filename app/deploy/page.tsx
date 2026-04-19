@@ -185,7 +185,7 @@ export default function DeployPage() {
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
             {tx(d.contractType, lang)}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
             {CONTRACTS.map(c => (
               <div key={c.id} onClick={() => { setSelectedId(c.id); setStatus('idle'); setError('') }}
                 style={{ background: selectedId === c.id ? 'var(--bg-card2)' : 'var(--bg-card)', border: `1px solid ${selectedId === c.id ? '#3b82f6' : 'var(--border)'}`, borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', transition: 'border-color 0.15s' }}>
@@ -206,7 +206,7 @@ export default function DeployPage() {
           {selected.fields.length === 0 ? (
             <div style={{ fontSize: '13px', color: 'var(--text-muted)', padding: '4px 0' }}>{tx(d.noParams, lang)}</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: selected.fields.length === 1 ? '1fr' : '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: selected.fields.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(140px,1fr))', gap: '12px' }}>
               {selected.fields.map(f => (
                 <InputField key={f.key} label={f.label} value={fields[f.key] ?? ''}
                   onChange={v => setFields(p => ({ ...p, [f.key]: v }))} placeholder={f.placeholder} type={f.type} />

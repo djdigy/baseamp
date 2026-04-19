@@ -35,3 +35,25 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   transition: background 0.2s, color 0.2s;
 }
+
+/* ── Mobile / Viewport fixes ─────────────────────────────────────────────── */
+html, body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent sidebar layout from breaking on narrow screens */
+@media (max-width: 767px) {
+  /* Inputs and buttons: prevent iOS zoom on focus */
+  input, select, textarea, button {
+    font-size: max(16px, 1em);
+  }
+
+  /* Ensure text doesn't overflow cards */
+  * { word-break: break-word; }
+}
+
+/* Safe area for iOS notch / bottom bar */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
