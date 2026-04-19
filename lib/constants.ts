@@ -1,4 +1,6 @@
-export const OWNER_ADDRESS = '0xDE77EaEa4Dae7dBEde8d5093E9A9C37b16176D52' as `0x${string}`
+export const PLATFORM_ADDRESS = '0xbE0E7B18376171b7D215Ed3d5a1F43533dBaFD94' as `0x${string}`
+/** @deprecated use PLATFORM_ADDRESS */
+export const OWNER_ADDRESS = PLATFORM_ADDRESS
 export const BUILDER_CODE  = 'bc_grji576m'
 export const GM_FEE        = BigInt('30000000000000')   // 0.00003 ETH
 export const DEPLOY_FEE    = BigInt('70000000000000')   // 0.00007 ETH

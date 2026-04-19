@@ -5,7 +5,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState, useEffect, useRef } from 'react'
 
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
+import { BUILDER_CODE, PLATFORM_ADDRESS, GM_FEE, encodeBuilderCode } from '@/lib/constants'
 import { getNextMilestone, getMilestones } from '@/lib/gm'
 import { useLang } from '@/components/Providers'
 import { TEXT, tx } from '@/lib/i18n'
@@ -142,7 +142,7 @@ export default function GmPage() {
       // Single TX — full fee to platform with builder code embedded
       // Referral split (20%) is tracked server-side and paid out by platform
       const hash = await sendTransactionAsync({
-        to: OWNER_ADDRESS,
+        to: PLATFORM_ADDRESS,
         value: GM_FEE,
         data: gmTxData,
         chainId: base.id,

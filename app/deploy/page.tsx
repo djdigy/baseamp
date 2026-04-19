@@ -7,7 +7,7 @@ import { useAccount, useSendTransaction, usePublicClient } from 'wagmi'
 import { useState } from 'react'
 import { encodeAbiParameters, parseAbiParameters, parseUnits, concat } from 'viem'
 import { base } from 'wagmi/chains'
-import { BUILDER_CODE, OWNER_ADDRESS, DEPLOY_FEE, encodeBuilderCode } from '@/lib/constants'
+import { BUILDER_CODE, PLATFORM_ADDRESS, DEPLOY_FEE, encodeBuilderCode } from '@/lib/constants'
 import * as ERC8021 from 'ox/erc8021'
 
 type DeployType = 'ERC20' | 'ERC721' | 'ERC1155' | 'Counter' | 'Greeter' | 'Logbook'
@@ -126,7 +126,7 @@ export default function DeployPage() {
     try {
       // Fee TX — builder code in data, full fee to platform
       const feeHash = await sendTransactionAsync({
-        to: OWNER_ADDRESS,
+        to: PLATFORM_ADDRESS,
         value: DEPLOY_FEE,
         data: encodeBuilderCode(BUILDER_CODE),
         chainId: base.id,
